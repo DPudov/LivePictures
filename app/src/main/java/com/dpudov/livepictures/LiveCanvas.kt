@@ -10,7 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun LiveCanvas(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.background(Color.White)) {
+    Box(modifier = modifier) {
 
     }
 }

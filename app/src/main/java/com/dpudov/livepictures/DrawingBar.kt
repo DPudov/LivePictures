@@ -1,18 +1,21 @@
 package com.dpudov.livepictures
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun DrawingBar(modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center
+    ) {
         PencilButton()
         BrushButton()
         EraserButton()
@@ -22,44 +25,60 @@ fun DrawingBar(modifier: Modifier = Modifier) {
 
 @Composable
 @Preview
-fun PencilButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_pencil),
-            contentDescription = stringResource(R.string.draw_with_pencil)
-        )
-    }
+fun PencilButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_pencil,
+        inactiveDrawableId = R.drawable.ic_pencil,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.draw_with_pencil)
+    )
 }
 
 @Composable
 @Preview
-fun BrushButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_brush),
-            contentDescription = stringResource(R.string.draw_with_brush)
-        )
-    }
+fun BrushButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_brush,
+        inactiveDrawableId = R.drawable.ic_brush,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.draw_with_brush)
+    )
 }
 
 @Composable
 @Preview
-fun EraserButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_eraser),
-            contentDescription = stringResource(R.string.eraser)
-        )
-    }
+fun EraserButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_eraser,
+        inactiveDrawableId = R.drawable.ic_eraser,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.eraser)
+    )
 }
 
 @Composable
 @Preview
-fun InstrumentsButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_instruments),
-            contentDescription = stringResource(R.string.instruments)
-        )
-    }
+fun InstrumentsButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_instruments,
+        inactiveDrawableId = R.drawable.ic_instruments,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.instruments)
+    )
 }

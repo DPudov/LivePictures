@@ -1,18 +1,21 @@
 package com.dpudov.livepictures
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun Toolbar(modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         HistoryControls()
 
         FrameControls()
@@ -57,101 +60,105 @@ fun AnimationControls() {
 @Composable
 @Preview
 fun UndoButton(
-    buttonState: ButtonState = ButtonState.Inactive
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
 ) {
-    val id = when (buttonState) {
-        ButtonState.Active -> R.drawable.ic_undo_active
-        ButtonState.Inactive -> R.drawable.ic_undo_unactive
-    }
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = id),
-            contentDescription = stringResource(R.string.undo_recent_action)
-        )
-    }
+    ActionButton(
+        activeDrawableId = R.drawable.ic_undo_active,
+        inactiveDrawableId = R.drawable.ic_undo_unactive,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.undo_recent_action)
+    )
 }
 
 @Composable
 @Preview
 fun RedoButton(
-    buttonState: ButtonState = ButtonState.Inactive
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
 ) {
-    val id = when (buttonState) {
-        ButtonState.Active -> R.drawable.ic_redo_active
-        ButtonState.Inactive -> R.drawable.ic_redo_unactive
-    }
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = id),
-            contentDescription = stringResource(R.string.redo_recent_action)
-        )
-    }
+    ActionButton(
+        activeDrawableId = R.drawable.ic_redo_active,
+        inactiveDrawableId = R.drawable.ic_redo_unactive,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.redo_recent_action)
+    )
 }
 
 @Composable
 @Preview
-fun RemoveFrameButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_bin),
-            contentDescription = stringResource(R.string.remove_frame)
-        )
-    }
+fun RemoveFrameButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_bin,
+        inactiveDrawableId = R.drawable.ic_bin,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.remove_frame)
+    )
 }
 
 @Composable
 @Preview
-fun AddFrameButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_add_frame),
-            contentDescription = stringResource(R.string.add_frame)
-        )
-    }
+fun AddFrameButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_add_frame,
+        inactiveDrawableId = R.drawable.ic_add_frame,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.add_frame)
+    )
 }
 
 @Composable
 @Preview
-fun ShowFramesButton() {
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_layers),
-            contentDescription = stringResource(R.string.show_frames)
-        )
-    }
+fun ShowFramesButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_layers,
+        inactiveDrawableId = R.drawable.ic_layers,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.instruments)
+    )
 }
 
 
 @Composable
 @Preview
 fun PauseButton(
-    buttonState: ButtonState = ButtonState.Inactive
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
 ) {
-    val id = when (buttonState) {
-        ButtonState.Active -> R.drawable.ic_pause_active
-        ButtonState.Inactive -> R.drawable.ic_pause_unactive
-    }
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = id), contentDescription =
-            stringResource(R.string.pause_animation)
-        )
-    }
+    ActionButton(
+        activeDrawableId = R.drawable.ic_pause_active,
+        inactiveDrawableId = R.drawable.ic_pause_unactive,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.pause_animation)
+    )
 }
 
 @Composable
 @Preview
 fun StartButton(
-    buttonState: ButtonState = ButtonState.Inactive
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
 ) {
-    val id = when (buttonState) {
-        ButtonState.Active -> R.drawable.ic_start_active
-        ButtonState.Inactive -> R.drawable.ic_start_unactive
-    }
-    IconButton(onClick = { /*TODO*/ }) {
-        Icon(
-            painter = painterResource(id = id),
-            contentDescription = stringResource(R.string.start_animation)
-        )
-    }
+    ActionButton(
+        activeDrawableId = R.drawable.ic_start_active,
+        inactiveDrawableId = R.drawable.ic_start_unactive,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.start_animation)
+    )
 }
