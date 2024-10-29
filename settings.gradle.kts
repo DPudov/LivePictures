@@ -20,4 +20,9 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "LivePictures"
-include(":app")
+include(
+    ":app",
+    ":app:datasource-frames",
+    ":app:domain",
+    ":app:data"
+)
