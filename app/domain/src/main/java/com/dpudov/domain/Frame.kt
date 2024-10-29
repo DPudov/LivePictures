@@ -1,4 +1,4 @@
 package com.dpudov.domain
 
-class MyClass {
+class Frame {
 }
