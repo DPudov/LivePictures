@@ -26,19 +26,26 @@ import com.dpudov.livepictures.presentation.model.SelectedState
 @Preview
 fun DrawingBar(
     isColorPadVisible: Boolean = false,
+    isPickerVisible: Boolean = false,
     selectedColor: Color = Color.White,
     selectedInstrument: Instrument = Instrument.Pencil,
     onSelection: (Instrument) -> Unit = {},
     onColorPadToggle: () -> Unit = {},
     onColorSelectionChanged: (Color) -> Unit = {},
+    onPaletteClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+//        ColorPicker(
+//            isPickerVisible = isPickerVisible,
+//            onColorSelected = onColorSelectionChanged
+//        )
         ColorPad(
             isVisible = isColorPadVisible,
+            onPaletteClick = onPaletteClick,
             onColorSelected = onColorSelectionChanged
         )
         Row(

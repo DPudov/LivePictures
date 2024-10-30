@@ -35,6 +35,7 @@ fun MainScreen(
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
     val currentColor by viewModel.selectedColor.collectAsState()
     var isColorPadVisible by remember { mutableStateOf(false) }
+    var isColorPickerVisible by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
         LiveCanvas(
@@ -79,7 +80,9 @@ fun MainScreen(
             },
             onColorSelectionChanged = { color ->
                 viewModel.selectColor(color.value)
-                isColorPadVisible = !isColorPadVisible
+            },
+            onPaletteClick = {
+                isColorPickerVisible = !isColorPickerVisible
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
