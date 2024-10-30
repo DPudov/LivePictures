@@ -1,7 +1,7 @@
 package com.dpudov.livepictures.presentation.ui.controls
 
+import android.graphics.Color
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,22 +19,18 @@ import com.dpudov.livepictures.presentation.ui.view.LiveCanvasView
 fun LiveCanvas(
     frame: Frame? = null,
     instrument: Instrument = Instrument.Pencil,
+    color: Int = Color.WHITE,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
         if (frame != null) {
-            Column {
-                Text(
-                    text = "Frame: $frame"
-                )
-                AndroidView(
-                    factory = { context ->
-                        LiveCanvasView(context)
-                    }, update = { view ->
-                        view.setInstrument(instrument)
-                    })
-            }
-
+            AndroidView(
+                factory = { context ->
+                    LiveCanvasView(context)
+                }, update = { view ->
+                    view.setInstrument(instrument)
+                    view.setColor(color)
+                })
         } else {
             Text(
                 modifier = Modifier.align(Alignment.Center),

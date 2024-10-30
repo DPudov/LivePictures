@@ -25,14 +25,14 @@ class LiveCanvasView @JvmOverloads constructor(
 ) : SurfaceView(context, attrs, defStyleAttr, defStyleRes), SurfaceHolder.Callback {
     private val path = Path()
     private val paint = Paint().apply {
-        color = Color.CYAN
+        color = Color.WHITE
         strokeWidth = 5f
         style = Paint.Style.STROKE
         isAntiAlias = true
     }
 
     private val brushPaint = Paint().apply {
-        color = Color.BLUE
+        color = Color.WHITE
         strokeWidth = 15f
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
@@ -71,6 +71,12 @@ class LiveCanvasView @JvmOverloads constructor(
             Instrument.Pencil -> paint
             Instrument.Brush -> brushPaint
             Instrument.Eraser -> eraserPaint
+        }
+    }
+
+    fun setColor(newColor: Int) {
+        currentPaint.apply {
+            color = newColor
         }
     }
 
