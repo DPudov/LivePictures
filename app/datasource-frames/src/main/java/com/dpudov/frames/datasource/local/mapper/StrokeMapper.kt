@@ -1,6 +1,6 @@
 package com.dpudov.frames.datasource.local.mapper
 
-import com.dpudov.domain.Stroke
+import com.dpudov.domain.model.Stroke
 import com.dpudov.frames.datasource.local.entity.StrokeEntity
 
 fun StrokeEntity.toData(): Stroke = Stroke(

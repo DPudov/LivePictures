@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.kapt)
 }
 
 android {
@@ -49,6 +52,9 @@ android {
 }
 
 dependencies {
+    implementation(projects.app.domain)
+    implementation(projects.app.data)
+    implementation(projects.app.datasourceFrames)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -58,6 +64,14 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation(libs.room.runtime)
+
+    implementation(libs.dagger.hilt.android)
+//    ksp(libs.dagger.compiler)
+    ksp(libs.dagger.hilt.compiler)
+//    implementation(libs.hilt.compiler)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

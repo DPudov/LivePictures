@@ -1,7 +1,7 @@
 package com.dpudov.frames.datasource.local.service
 
-import IFrameDaoService
-import com.dpudov.domain.Frame
+import com.dpudov.data.IFrameDaoService
+import com.dpudov.domain.model.Frame
 import com.dpudov.frames.datasource.local.dao.FrameDao
 import com.dpudov.frames.datasource.local.database.AppDatabase
 import com.dpudov.frames.datasource.local.entity.FrameEntity
@@ -44,15 +44,46 @@ class FrameDaoService(
         ).map(FrameEntity::toData)
     }
 
+    override suspend fun loadLastFrame(animationId: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadLastFrame(animationId)?.toData()
+    }
+
+    override suspend fun loadFirstFrame(animationId: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadFirstFrame(animationId)?.toData()
+    }
+
+    override suspend fun loadById(animationId: UUID, id: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadById(
+            animationId = animationId,
+            id = id
+        )?.toData()
+    }
+
     override suspend fun addFrame(frame: Frame) {
         withContext(dispatcher) {
+            val prevId = frame.prevId
+            val nextId = frame.nextId
+            if (prevId != null) {
+                frameDao.updateNextIdOnPrev(prevFrameId = prevId, newNextId = frame.id)
+            }
+            if (nextId != null) {
+                frameDao.updatePrevIdOnNext(nextFrameId = nextId, newPrevId = frame.id)
+            }
             frameDao.addFrame(frame.toEntity())
         }
     }
 
-    override suspend fun removeFrame(frameId: UUID) {
+    override suspend fun removeFrame(frame: Frame) {
         withContext(dispatcher) {
-            frameDao.removeFrame(frameId)
+            val prevId = frame.prevId
+            val nextId = frame.nextId
+            if (prevId != null) {
+                frameDao.updateNextIdOnPrev(prevFrameId = prevId, newNextId = nextId)
+            }
+            if (nextId != null) {
+                frameDao.updatePrevIdOnNext(nextFrameId = nextId, newPrevId = prevId)
+            }
+            frameDao.removeFrame(frameId = frame.id)
         }
     }
 }

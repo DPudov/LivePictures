@@ -11,4 +11,5 @@
     <string name="draw_with_brush">Draw with brush</string>
     <string name="eraser">Eraser</string>
     <string name="instruments">Instruments</string>
+    <string name="no_frame_exist_add_one_to_start_drawing">No frame exist. Add one to start drawing</string>
 </resources>
