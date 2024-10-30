@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.util.AttributeSet
@@ -59,11 +60,13 @@ class LiveCanvasView @JvmOverloads constructor(
 
     init {
         holder.addCallback(this)
+        setZOrderOnTop(true)
+        holder.setFormat(PixelFormat.TRANSPARENT)
     }
 
     private fun setupBitmap() {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        canvas = Canvas(bitmap)  // Use this canvas for all drawing operations
+        canvas = Canvas(bitmap)
     }
 
     fun setInstrument(instrument: Instrument) {
