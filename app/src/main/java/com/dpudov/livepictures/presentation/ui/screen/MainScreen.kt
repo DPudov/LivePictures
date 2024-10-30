@@ -32,6 +32,7 @@ fun MainScreen(
     Box(modifier = modifier.fillMaxSize()) {
         LiveCanvas(
             frame = currentFrame,
+            instrument = currentInstrument,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(

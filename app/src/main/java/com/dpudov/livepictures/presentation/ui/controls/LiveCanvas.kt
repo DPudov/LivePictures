@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dpudov.domain.model.Frame
+import com.dpudov.domain.model.Instrument
 import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.ui.view.LiveCanvasView
 
@@ -17,6 +18,7 @@ import com.dpudov.livepictures.presentation.ui.view.LiveCanvasView
 @Preview
 fun LiveCanvas(
     frame: Frame? = null,
+    instrument: Instrument = Instrument.Pencil,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -25,9 +27,12 @@ fun LiveCanvas(
                 Text(
                     text = "Frame: $frame"
                 )
-                AndroidView(factory = { context ->
-                    LiveCanvasView(context)
-                })
+                AndroidView(
+                    factory = { context ->
+                        LiveCanvasView(context)
+                    }, update = { view ->
+                        view.setInstrument(instrument)
+                    })
             }
 
         } else {
