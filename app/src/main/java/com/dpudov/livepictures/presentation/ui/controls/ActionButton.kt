@@ -11,12 +11,12 @@ import com.dpudov.livepictures.presentation.model.ButtonState
 
 @Composable
 fun ActionButton(
-    modifier: Modifier = Modifier,
     @DrawableRes activeDrawableId: Int,
     @DrawableRes inactiveDrawableId: Int,
     buttonState: ButtonState,
     onClick: () -> Unit,
-    contentDescription: String
+    contentDescription: String,
+    modifier: Modifier = Modifier
 ) {
     val id = when (buttonState) {
         ButtonState.Active -> activeDrawableId

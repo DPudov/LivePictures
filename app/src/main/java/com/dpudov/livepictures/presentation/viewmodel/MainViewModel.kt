@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
 import com.dpudov.domain.model.Frame
+import com.dpudov.domain.model.Instrument
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
@@ -32,6 +33,10 @@ class MainViewModel @Inject constructor(
 
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> = _currentFrame
+
+    private val _selectedInstrument: MutableStateFlow<Instrument> =
+        MutableStateFlow(Instrument.Pencil)
+    val selectedInstrument: StateFlow<Instrument> = _selectedInstrument
 
     init {
         setupAnimation()
@@ -171,6 +176,10 @@ class MainViewModel @Inject constructor(
                 _currentFrame.update { newFrame }
             }
         }
+    }
+
+    fun selectInstrument(instrument: Instrument) {
+        _selectedInstrument.update { instrument }
     }
 
     companion object {

@@ -27,6 +27,8 @@ fun MainScreen(
     modifier: Modifier = Modifier
 ) {
     val currentFrame by viewModel.currentFrame.collectAsState()
+    val currentInstrument by viewModel.selectedInstrument.collectAsState()
+    
     Box(modifier = modifier.fillMaxSize()) {
         LiveCanvas(
             frame = currentFrame,
@@ -71,7 +73,9 @@ fun MainScreen(
                     color = MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            selectedInstrument = currentInstrument,
+            onSelection = viewModel::selectInstrument
         )
     }
 }

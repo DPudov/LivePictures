@@ -6,19 +6,42 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.dpudov.domain.model.Instrument
 import com.dpudov.livepictures.R
+import com.dpudov.livepictures.presentation.mapper.toSelectedState
 import com.dpudov.livepictures.presentation.model.ButtonState
+import com.dpudov.livepictures.presentation.model.SelectedState
 
 @Composable
 @Preview
-fun DrawingBar(modifier: Modifier = Modifier) {
+fun DrawingBar(
+    selectedInstrument: Instrument = Instrument.Pencil,
+    onSelection: (Instrument) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center
     ) {
-        PencilButton()
-        BrushButton()
-        EraserButton()
+
+        PencilButton(
+            selectedState = selectedInstrument.toSelectedState(Instrument.Pencil),
+            onClick = {
+                onSelection(Instrument.Pencil)
+            }
+        )
+        BrushButton(
+            selectedState = selectedInstrument.toSelectedState(Instrument.Brush),
+            onClick = {
+                onSelection(Instrument.Brush)
+            }
+        )
+        EraserButton(
+            selectedState = selectedInstrument.toSelectedState(Instrument.Eraser),
+            onClick = {
+                onSelection(Instrument.Eraser)
+            }
+        )
         InstrumentsButton()
     }
 }
@@ -26,13 +49,12 @@ fun DrawingBar(modifier: Modifier = Modifier) {
 @Composable
 @Preview
 fun PencilButton(
-    buttonState: ButtonState = ButtonState.Inactive,
+    selectedState: SelectedState = SelectedState.Idle,
     onClick: () -> Unit = {}
 ) {
-    ActionButton(
-        activeDrawableId = R.drawable.ic_pencil,
-        inactiveDrawableId = R.drawable.ic_pencil,
-        buttonState = buttonState,
+    InstrumentButton(
+        drawableId = R.drawable.ic_pencil,
+        selectedState = selectedState,
         onClick = onClick,
         contentDescription = stringResource(R.string.draw_with_pencil)
     )
@@ -41,13 +63,12 @@ fun PencilButton(
 @Composable
 @Preview
 fun BrushButton(
-    buttonState: ButtonState = ButtonState.Inactive,
+    selectedState: SelectedState = SelectedState.Idle,
     onClick: () -> Unit = {}
 ) {
-    ActionButton(
-        activeDrawableId = R.drawable.ic_brush,
-        inactiveDrawableId = R.drawable.ic_brush,
-        buttonState = buttonState,
+    InstrumentButton(
+        drawableId = R.drawable.ic_brush,
+        selectedState = selectedState,
         onClick = onClick,
         contentDescription = stringResource(R.string.draw_with_brush)
     )
@@ -56,13 +77,12 @@ fun BrushButton(
 @Composable
 @Preview
 fun EraserButton(
-    buttonState: ButtonState = ButtonState.Inactive,
+    selectedState: SelectedState = SelectedState.Idle,
     onClick: () -> Unit = {}
 ) {
-    ActionButton(
-        activeDrawableId = R.drawable.ic_eraser,
-        inactiveDrawableId = R.drawable.ic_eraser,
-        buttonState = buttonState,
+    InstrumentButton(
+        drawableId = R.drawable.ic_eraser,
+        selectedState = selectedState,
         onClick = onClick,
         contentDescription = stringResource(R.string.eraser)
     )

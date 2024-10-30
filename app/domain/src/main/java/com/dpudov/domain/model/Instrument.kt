@@ -1,7 +1,9 @@
 package com.dpudov.domain.model
 
-enum class Instrument {
-    PENCIL,
-    BRUSH,
-    ERASER
+sealed class Instrument {
+    data object Pencil: Instrument()
+
+    data object Brush: Instrument()
+
+    data object Eraser: Instrument()
 }
