@@ -12,6 +12,10 @@ interface IFrameRepository {
         pageSize: Int
     ): List<Frame>
 
+    suspend fun loadLastFrame(animationId: UUID): Frame?
+
+    suspend fun loadFirstFrame(animationId: UUID): Frame?
+
     suspend fun addFrame(frame: Frame)
 
     suspend fun removeFrame(frame: Frame)

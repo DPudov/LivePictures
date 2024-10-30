@@ -1,8 +1,8 @@
 package com.dpudov.livepictures.di
 
-import IAnimationDaoService
-import IFrameDaoService
-import IStrokeDaoService
+import com.dpudov.data.IAnimationDaoService
+import com.dpudov.data.IFrameDaoService
+import com.dpudov.data.IStrokeDaoService
 import com.dpudov.frames.datasource.local.database.AppDatabase
 import com.dpudov.frames.datasource.local.service.AnimationDaoService
 import com.dpudov.frames.datasource.local.service.FrameDaoService

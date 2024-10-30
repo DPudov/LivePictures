@@ -1,3 +1,5 @@
+package com.dpudov.data
+
 import com.dpudov.domain.model.Stroke
 import java.util.UUID
 

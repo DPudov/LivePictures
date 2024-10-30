@@ -1,11 +1,11 @@
 package com.dpudov.livepictures.di
 
-import AnimationRepository
-import FrameRepository
-import IAnimationDaoService
-import IFrameDaoService
-import IStrokeDaoService
-import StrokeRepository
+import com.dpudov.data.AnimationRepository
+import com.dpudov.data.FrameRepository
+import com.dpudov.data.IAnimationDaoService
+import com.dpudov.data.IFrameDaoService
+import com.dpudov.data.IStrokeDaoService
+import com.dpudov.data.StrokeRepository
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository

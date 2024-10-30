@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.kapt)
 }
 
 android {
@@ -67,7 +68,9 @@ dependencies {
     implementation(libs.room.runtime)
 
     implementation(libs.dagger.hilt.android)
+//    ksp(libs.dagger.compiler)
     ksp(libs.dagger.hilt.compiler)
+//    implementation(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

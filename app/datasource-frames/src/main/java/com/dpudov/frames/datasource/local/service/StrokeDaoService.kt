@@ -1,6 +1,6 @@
 package com.dpudov.frames.datasource.local.service
 
-import IStrokeDaoService
+import com.dpudov.data.IStrokeDaoService
 import com.dpudov.domain.model.Stroke
 import com.dpudov.frames.datasource.local.dao.StrokeDao
 import com.dpudov.frames.datasource.local.database.AppDatabase

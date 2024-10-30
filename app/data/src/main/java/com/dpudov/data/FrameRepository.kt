@@ -1,3 +1,5 @@
+package com.dpudov.data
+
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.repository.IFrameRepository
 import java.util.UUID
@@ -24,6 +26,12 @@ class FrameRepository(
         firstFrameId = firstFrameId,
         pageSize = pageSize
     )
+
+    override suspend fun loadLastFrame(animationId: UUID): Frame? =
+        localDaoService.loadLastFrame(animationId)
+
+    override suspend fun loadFirstFrame(animationId: UUID): Frame? =
+        localDaoService.loadFirstFrame(animationId)
 
     override suspend fun addFrame(frame: Frame) {
         localDaoService.addFrame(frame)

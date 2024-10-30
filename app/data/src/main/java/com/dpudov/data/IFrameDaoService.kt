@@ -1,3 +1,5 @@
+package com.dpudov.data
+
 import com.dpudov.domain.model.Frame
 import java.util.UUID
 
@@ -9,6 +11,10 @@ interface IFrameDaoService {
         firstFrameId: UUID?,
         pageSize: Int
     ): List<Frame>
+
+    suspend fun loadLastFrame(animationId: UUID): Frame?
+
+    suspend fun loadFirstFrame(animationId: UUID): Frame?
 
     suspend fun addFrame(frame: Frame)
 

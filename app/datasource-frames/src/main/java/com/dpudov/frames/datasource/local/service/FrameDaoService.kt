@@ -1,6 +1,6 @@
 package com.dpudov.frames.datasource.local.service
 
-import IFrameDaoService
+import com.dpudov.data.IFrameDaoService
 import com.dpudov.domain.model.Frame
 import com.dpudov.frames.datasource.local.dao.FrameDao
 import com.dpudov.frames.datasource.local.database.AppDatabase
@@ -42,6 +42,14 @@ class FrameDaoService(
             firstFrameId = firstFrameId,
             pageSize = pageSize
         ).map(FrameEntity::toData)
+    }
+
+    override suspend fun loadLastFrame(animationId: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadLastFrame(animationId)?.toData()
+    }
+
+    override suspend fun loadFirstFrame(animationId: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadFirstFrame(animationId)?.toData()
     }
 
     override suspend fun addFrame(frame: Frame) {

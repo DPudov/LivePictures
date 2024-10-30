@@ -9,19 +9,25 @@ import java.util.UUID
 
 @Dao
 interface FrameDao {
-    @Query("select * from frames where animationId = :animationId and (prevFrameId = :lastFrameId OR :lastFrameId IS NULL) LIMIT :pageSize")
+    @Query("select * from frames where animationId = :animationId and (prevFrameId = :lastFrameId or :lastFrameId is null) limit :pageSize")
     suspend fun loadNextFrames(
         animationId: UUID,
         lastFrameId: UUID?,
         pageSize: Int
     ): List<FrameEntity>
 
-    @Query("select * from frames WHERE animationId = :animationId AND (nextFrameId = :firstFrameId OR :firstFrameId IS NULL) LIMIT :pageSize")
+    @Query("select * from frames where animationId = :animationId and (nextFrameId = :firstFrameId or :firstFrameId is null) limit :pageSize")
     suspend fun loadPreviousFrames(
         animationId: UUID,
         firstFrameId: UUID?,
         pageSize: Int
     ): List<FrameEntity>
+
+    @Query("select * from frames where animationId = :animationId and nextFrameId is null")
+    suspend fun loadLastFrame(animationId: UUID): FrameEntity?
+
+    @Query("select * from frames where animationId = :animationId and prevFrameId is null")
+    suspend fun loadFirstFrame(animationId: UUID): FrameEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addFrame(frame: FrameEntity)

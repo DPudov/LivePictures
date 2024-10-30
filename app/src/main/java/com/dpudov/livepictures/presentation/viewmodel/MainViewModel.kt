@@ -33,19 +33,45 @@ class MainViewModel @Inject constructor(
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> = _currentFrame
 
-    fun setupAnimation() {
+    init {
+        setupAnimation()
+    }
+
+    private fun setupAnimation() {
         viewModelScope.launch {
             val animation = animationRepository.getLatestAnimation().firstOrNull()
             if (animation == null) {
                 val id = UUID.randomUUID()
                 val currentTimestamp = System.currentTimeMillis()
-                animationRepository.addAnimation(
-                    Animation(
-                        id = id,
-                        name = DEFAULT_ANIMATION_NAME,
-                        createdAt = currentTimestamp
-                    )
+                val newAnimation = Animation(
+                    id = id,
+                    name = DEFAULT_ANIMATION_NAME,
+                    createdAt = currentTimestamp
                 )
+                animationRepository.addAnimation(newAnimation)
+                val frameId = UUID.randomUUID()
+                val newFrame = Frame(
+                    id = frameId,
+                    animationId = id,
+                    prevId = null,
+                    nextId = null
+                )
+                frameRepository.addFrame(newFrame)
+                _currentFrame.update { newFrame }
+            } else {
+                val lastFrame = frameRepository.loadLastFrame(animation.id)
+                if (lastFrame == null) {
+                    val frameId = UUID.randomUUID()
+                    val newFrame = Frame(
+                        id = frameId,
+                        animationId = animation.id,
+                        prevId = null,
+                        nextId = null
+                    )
+                    _currentFrame.update { newFrame }
+                } else {
+                    _currentFrame.update { lastFrame }
+                }
             }
         }
     }
@@ -115,6 +141,7 @@ class MainViewModel @Inject constructor(
                 nextId = currentFrame?.nextId
             )
             frameRepository.addFrame(newFrame)
+            _currentFrame.update { newFrame }
         }
     }
 
