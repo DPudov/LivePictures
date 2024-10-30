@@ -29,6 +29,9 @@ interface FrameDao {
     @Query("select * from frames where animationId = :animationId and prevFrameId is null")
     suspend fun loadFirstFrame(animationId: UUID): FrameEntity?
 
+    @Query("select * from frames where animationId = :animationId and id = :id")
+    suspend fun loadById(animationId: UUID, id: UUID): FrameEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addFrame(frame: FrameEntity)
 

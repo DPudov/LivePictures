@@ -153,6 +153,23 @@ class MainViewModel @Inject constructor(
             if (currentFrame != null) {
                 frameRepository.removeFrame(frame = currentFrame)
             }
+            val newCurrentFrameId = currentFrame?.prevId ?: currentFrame?.nextId
+            if (newCurrentFrameId != null) {
+                val newCurrentFrame = frameRepository.loadById(
+                    animationId = currentAnimationId,
+                    id = newCurrentFrameId
+                )
+                _currentFrame.update { newCurrentFrame }
+            } else {
+                val newId = UUID.randomUUID()
+                val newFrame = Frame(
+                    id = newId,
+                    animationId = currentAnimationId,
+                    prevId = null,
+                    nextId = null
+                )
+                _currentFrame.update { newFrame }
+            }
         }
     }
 

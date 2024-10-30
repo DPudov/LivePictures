@@ -52,6 +52,13 @@ class FrameDaoService(
         frameDao.loadFirstFrame(animationId)?.toData()
     }
 
+    override suspend fun loadById(animationId: UUID, id: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadById(
+            animationId = animationId,
+            id = id
+        )?.toData()
+    }
+
     override suspend fun addFrame(frame: Frame) {
         withContext(dispatcher) {
             val prevId = frame.prevId
