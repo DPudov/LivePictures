@@ -9,5 +9,7 @@ data class AnimationEntity(
     @PrimaryKey
     val id: UUID,
 
-    val name: String
+    val name: String,
+
+    val createdAt: Long
 )
