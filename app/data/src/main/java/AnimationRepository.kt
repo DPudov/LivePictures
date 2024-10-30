@@ -1,5 +1,5 @@
-import com.dpudov.domain.Animation
-import com.dpudov.domain.IAnimationRepository
+import com.dpudov.domain.model.Animation
+import com.dpudov.domain.repository.IAnimationRepository
 import kotlinx.coroutines.flow.Flow
 
 class AnimationRepository(

@@ -1,4 +1,4 @@
-import com.dpudov.domain.Animation
+import com.dpudov.domain.model.Animation
 import kotlinx.coroutines.flow.Flow
 
 interface IAnimationDaoService {

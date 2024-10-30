@@ -1,7 +1,7 @@
 package com.dpudov.frames.datasource.local.service
 
 import IAnimationDaoService
-import com.dpudov.domain.Animation
+import com.dpudov.domain.model.Animation
 import com.dpudov.frames.datasource.local.dao.AnimationDao
 import com.dpudov.frames.datasource.local.database.AppDatabase
 import com.dpudov.frames.datasource.local.mapper.toData

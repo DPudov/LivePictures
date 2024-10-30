@@ -1,4 +1,4 @@
-import com.dpudov.domain.Stroke
+import com.dpudov.domain.model.Stroke
 import java.util.UUID
 
 interface IStrokeDaoService {

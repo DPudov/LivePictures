@@ -1,4 +1,4 @@
-import com.dpudov.domain.Frame
+import com.dpudov.domain.model.Frame
 import java.util.UUID
 
 interface IFrameDaoService {
@@ -12,5 +12,5 @@ interface IFrameDaoService {
 
     suspend fun addFrame(frame: Frame)
 
-    suspend fun removeFrame(frameId: UUID)
+    suspend fun removeFrame(frame: Frame)
 }

@@ -1,7 +1,7 @@
 package com.dpudov.frames.datasource.local.service
 
 import IStrokeDaoService
-import com.dpudov.domain.Stroke
+import com.dpudov.domain.model.Stroke
 import com.dpudov.frames.datasource.local.dao.StrokeDao
 import com.dpudov.frames.datasource.local.database.AppDatabase
 import com.dpudov.frames.datasource.local.mapper.toEntity

@@ -1,4 +1,4 @@
-package com.dpudov.livepictures
+package com.dpudov.livepictures.presentation.model
 
 sealed class ButtonState {
     data object Active : ButtonState()

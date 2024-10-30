@@ -1,4 +1,4 @@
-package com.dpudov.domain
+package com.dpudov.domain.model
 
 import java.util.UUID
 

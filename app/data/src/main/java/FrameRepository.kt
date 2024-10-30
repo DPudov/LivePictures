@@ -1,5 +1,5 @@
-import com.dpudov.domain.Frame
-import com.dpudov.domain.IFrameRepository
+import com.dpudov.domain.model.Frame
+import com.dpudov.domain.repository.IFrameRepository
 import java.util.UUID
 
 class FrameRepository(
@@ -29,7 +29,7 @@ class FrameRepository(
         localDaoService.addFrame(frame)
     }
 
-    override suspend fun removeFrame(frameId: UUID) {
-        localDaoService.removeFrame(frameId)
+    override suspend fun removeFrame(frame: Frame) {
+        localDaoService.removeFrame(frame)
     }
 }

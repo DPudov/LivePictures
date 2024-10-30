@@ -1,5 +1,6 @@
-package com.dpudov.domain
+package com.dpudov.domain.repository
 
+import com.dpudov.domain.model.Frame
 import java.util.UUID
 
 interface IFrameRepository {
@@ -13,5 +14,5 @@ interface IFrameRepository {
 
     suspend fun addFrame(frame: Frame)
 
-    suspend fun removeFrame(frameId: UUID)
+    suspend fun removeFrame(frame: Frame)
 }

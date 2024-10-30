@@ -1,6 +1,6 @@
 package com.dpudov.frames.datasource.local.mapper
 
-import com.dpudov.domain.Frame
+import com.dpudov.domain.model.Frame
 import com.dpudov.frames.datasource.local.entity.FrameEntity
 
 fun FrameEntity.toData(): Frame = Frame(

@@ -1,4 +1,4 @@
-package com.dpudov.livepictures.ui.theme
+package com.dpudov.livepictures.presentation.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

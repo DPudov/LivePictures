@@ -1,4 +1,4 @@
-package com.dpudov.livepictures
+package com.dpudov.livepictures.presentation.ui.view
 
 import android.content.Context
 import android.graphics.Canvas

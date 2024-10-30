@@ -1,59 +1,88 @@
-package com.dpudov.livepictures
+package com.dpudov.livepictures.presentation.ui.controls
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.dpudov.livepictures.R
+import com.dpudov.livepictures.presentation.model.ButtonState
 
 @Composable
 @Preview
-fun Toolbar(modifier: Modifier = Modifier) {
+fun Toolbar(
+    modifier: Modifier = Modifier,
+    onUndo: () -> Unit = {},
+    onRedo: () -> Unit = {},
+    onDeleteFrame: () -> Unit = {},
+    onAddFrame: () -> Unit = {},
+    onShowFrames: () -> Unit = {},
+    onStart: () -> Unit = {},
+    onPause: () -> Unit = {}
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        HistoryControls()
+        HistoryControls(
+            onUndo = onUndo,
+            onRedo = onRedo
+        )
 
-        FrameControls()
+        FrameControls(
+            onDeleteFrame = onDeleteFrame,
+            onAddFrame = onAddFrame,
+            onShowFrames = onShowFrames
+        )
 
-        AnimationControls()
+        AnimationControls(
+            onPause = onPause,
+            onStart = onStart
+        )
     }
 }
 
 
 @Composable
 @Preview
-fun HistoryControls() {
+fun HistoryControls(
+    onUndo: () -> Unit = {},
+    onRedo: () -> Unit = {}
+) {
     Row {
-        UndoButton()
+        UndoButton(onClick = onUndo)
 
-        RedoButton()
+        RedoButton(onClick = onRedo)
     }
 }
 
 @Composable
 @Preview
-fun FrameControls() {
+fun FrameControls(
+    onDeleteFrame: () -> Unit = {},
+    onAddFrame: () -> Unit = {},
+    onShowFrames: () -> Unit = {}
+) {
     Row {
-        RemoveFrameButton()
+        RemoveFrameButton(onClick = onDeleteFrame)
 
-        AddFrameButton()
+        AddFrameButton(onClick = onAddFrame)
 
-        ShowFramesButton()
+        ShowFramesButton(onClick = onShowFrames)
     }
 }
 
 @Composable
 @Preview
-fun AnimationControls() {
+fun AnimationControls(
+    onPause: () -> Unit = {},
+    onStart: () -> Unit = {}
+) {
     Row {
-        PauseButton()
+        PauseButton(onClick = onPause)
 
-        StartButton()
+        StartButton(onClick = onStart)
     }
 }
 

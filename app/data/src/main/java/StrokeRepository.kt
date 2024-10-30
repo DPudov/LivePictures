@@ -1,9 +1,10 @@
-import com.dpudov.domain.Stroke
+import com.dpudov.domain.model.Stroke
+import com.dpudov.domain.repository.IStrokeRepository
 import java.util.UUID
 
 class StrokeRepository(
     private val localDaoService: IStrokeDaoService
-) : IStrokeDaoService {
+) : IStrokeRepository {
     override suspend fun addStroke(stroke: Stroke) {
         localDaoService.addStroke(stroke)
     }

@@ -1,5 +1,6 @@
-package com.dpudov.domain
+package com.dpudov.domain.repository
 
+import com.dpudov.domain.model.Animation
 import kotlinx.coroutines.flow.Flow
 
 interface IAnimationRepository {
