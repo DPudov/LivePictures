@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
@@ -37,6 +38,9 @@ class MainViewModel @Inject constructor(
     private val _selectedInstrument: MutableStateFlow<Instrument> =
         MutableStateFlow(Instrument.Pencil)
     val selectedInstrument: StateFlow<Instrument> = _selectedInstrument
+
+    private val _selectedColor: MutableStateFlow<ULong> = MutableStateFlow(Color.White.value)
+    val selectedColor: StateFlow<ULong> = _selectedColor
 
     init {
         setupAnimation()
@@ -180,6 +184,10 @@ class MainViewModel @Inject constructor(
 
     fun selectInstrument(instrument: Instrument) {
         _selectedInstrument.update { instrument }
+    }
+
+    fun selectColor(color: ULong) {
+        _selectedColor.update { color }
     }
 
     companion object {

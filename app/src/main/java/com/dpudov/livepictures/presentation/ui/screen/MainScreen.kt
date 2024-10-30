@@ -11,9 +11,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
@@ -28,7 +32,9 @@ fun MainScreen(
 ) {
     val currentFrame by viewModel.currentFrame.collectAsState()
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
-    
+    val currentColor by viewModel.selectedColor.collectAsState()
+    var isColorPadVisible by remember { mutableStateOf(false) }
+
     Box(modifier = modifier.fillMaxSize()) {
         LiveCanvas(
             frame = currentFrame,
@@ -64,6 +70,15 @@ fun MainScreen(
             onShowFrames = viewModel::showFrames
         )
         DrawingBar(
+            selectedColor = Color(currentColor),
+            isColorPadVisible = isColorPadVisible,
+            onColorPadToggle = {
+                isColorPadVisible = !isColorPadVisible
+            },
+            onColorSelectionChanged = { color ->
+                viewModel.selectColor(color.value)
+                isColorPadVisible = !isColorPadVisible
+            },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
