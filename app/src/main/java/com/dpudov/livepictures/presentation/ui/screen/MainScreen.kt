@@ -37,7 +37,11 @@ fun MainScreen(
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .background(color = MaterialTheme.colorScheme.surface)
+            .fillMaxSize()
+    ) {
         LiveCanvas(
             frame = currentFrame,
             instrument = currentInstrument,
