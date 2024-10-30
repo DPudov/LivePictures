@@ -1,7 +1,17 @@
 package com.dpudov.domain
 
+import java.util.UUID
+
 data class Stroke(
+    val id: UUID,
+
+    val frameId: UUID,
+
     val color: Int,
+
     val thickness: Float,
-    val points: List<PointF>
+
+    val instrumentId: UUID,
+
+    val finishTimestamp: Long
 ) : DrawableItem

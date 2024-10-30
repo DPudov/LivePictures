@@ -1,3 +1,6 @@
+@file:Suppress("UnstableApiUsage")
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         google {
@@ -26,3 +29,10 @@ include(
     ":app:domain",
     ":app:data"
 )
+
+
+buildCache {
+    local {
+        directory = File(rootDir, "build-cache")
+    }
+}
