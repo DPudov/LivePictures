@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "com.dpudov.data"
-    compileSdk = 34
+    compileSdk = Android.compileSdk
 
     defaultConfig {
-        minSdk = 24
+        minSdk = Android.minSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -24,11 +24,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = Android.jvmTarget
     }
 }
 

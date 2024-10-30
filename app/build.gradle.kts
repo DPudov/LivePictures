@@ -1,20 +1,21 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.dpudov.livepictures"
-    compileSdk = 34
+    compileSdk = Android.compileSdk
 
     defaultConfig {
-        applicationId = "com.dpudov.livepictures"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = Android.applicationId
+        minSdk = Android.minSdk
+        targetSdk = Android.compileSdk
+        versionCode = Android.versionCode
+        versionName = Android.versionName
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = Android.testInstrumentationRunner
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -30,17 +31,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = Android.jvmTarget
     }
+
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
         resources {

@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google {
@@ -26,3 +28,10 @@ include(
     ":app:domain",
     ":app:data"
 )
+
+
+buildCache {
+    local {
+        directory = File(rootDir, "build-cache")
+    }
+}
