@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b6eaefde77b14fe21b1f7571f2b14234",
+    "identityHash": "72d91f4337bbdf36791be873d618c87a",
     "entities": [
       {
         "tableName": "animations",
@@ -76,7 +76,7 @@
       },
       {
         "tableName": "strokes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `frameId` BLOB NOT NULL, `color` INTEGER NOT NULL, `thickness` REAL NOT NULL, `instrumentId` BLOB NOT NULL, `finishTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `frameId` BLOB NOT NULL, `color` INTEGER NOT NULL, `thickness` REAL NOT NULL, `instrument` TEXT NOT NULL, `finishTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -103,9 +103,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "instrumentId",
-            "columnName": "instrumentId",
-            "affinity": "BLOB",
+            "fieldPath": "instrument",
+            "columnName": "instrument",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -175,12 +175,50 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "points",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `strokeId` BLOB NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "strokeId",
+            "columnName": "strokeId",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "x",
+            "columnName": "x",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "y",
+            "columnName": "y",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b6eaefde77b14fe21b1f7571f2b14234')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '72d91f4337bbdf36791be873d618c87a')"
     ]
   }
 }

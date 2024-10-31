@@ -1,6 +1,5 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
-import android.graphics.PointF
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,17 +10,17 @@ import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
-import com.dpudov.livepictures.presentation.mapper.toData
 import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
-import com.dpudov.livepictures.presentation.model.Tool
 import com.dpudov.livepictures.presentation.model.ToolForStylus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -48,12 +47,17 @@ class MainViewModel @Inject constructor(
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> = _currentFrame
 
+    private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentStrokes: StateFlow<List<Stroke>> = currentFrame
-        .mapLatest { frame ->
-            frame ?: return@mapLatest emptyList()
-            strokeRepository.getStrokesByFrameId(frame.id)
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val currentStrokes: StateFlow<List<Stroke>> = refreshTrigger
+        .flatMapLatest {
+            currentFrame.mapLatest { frame ->
+                frame ?: return@mapLatest emptyList()
+                strokeRepository.getStrokesByFrameId(frame.id)
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
 
     private val _previousInstrument: MutableStateFlow<Instrument> =
@@ -71,8 +75,8 @@ class MainViewModel @Inject constructor(
         setupAnimation()
     }
 
-    val onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { points, tool, color, strokeWidth ->
-        addStroke(points, tool, color, strokeWidth)
+    val onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { stroke ->
+        addStroke(stroke)
     }
 
     val onToolChanged: OnToolChanged = OnToolChanged { newTool ->
@@ -110,6 +114,7 @@ class MainViewModel @Inject constructor(
                 )
                 frameRepository.addFrame(newFrame)
                 _currentFrame.update { newFrame }
+                refreshTrigger.emit(Unit)
             } else {
                 val lastFrame = frameRepository.loadLastFrame(animation.id)
                 if (lastFrame == null) {
@@ -121,28 +126,19 @@ class MainViewModel @Inject constructor(
                         nextId = null
                     )
                     _currentFrame.update { newFrame }
+                    refreshTrigger.emit(Unit)
                 } else {
                     _currentFrame.update { lastFrame }
+                    refreshTrigger.emit(Unit)
                 }
             }
         }
     }
 
-    private fun addStroke(points: List<PointF>, tool: Tool, color: Int, strokeWidth: Float) {
+    private fun addStroke(stroke: Stroke) {
         viewModelScope.launch {
-            val currentFrameId = currentFrame.value?.id ?: return@launch
-            val strokeId = UUID.randomUUID()
-            val timestamp = System.currentTimeMillis()
-            val stroke = Stroke(
-                id = strokeId,
-                frameId = currentFrameId,
-                color = color,
-                thickness = strokeWidth,
-                instrument = tool.toData(),
-                finishTimestamp = timestamp,
-                points = points.map { it.toData(strokeId) }
-            )
             strokeRepository.addStroke(stroke)
+            refreshTrigger.emit(Unit)
         }
     }
 
@@ -212,6 +208,7 @@ class MainViewModel @Inject constructor(
             )
             frameRepository.addFrame(newFrame)
             _currentFrame.update { newFrame }
+            refreshTrigger.emit(Unit)
         }
     }
 
@@ -230,6 +227,7 @@ class MainViewModel @Inject constructor(
                     id = newCurrentFrameId
                 )
                 _currentFrame.update { newCurrentFrame }
+                refreshTrigger.emit(Unit)
             } else {
                 val newId = UUID.randomUUID()
                 val newFrame = Frame(
@@ -239,6 +237,7 @@ class MainViewModel @Inject constructor(
                     nextId = null
                 )
                 _currentFrame.update { newFrame }
+                refreshTrigger.emit(Unit)
             }
         }
     }

@@ -9,7 +9,7 @@ data class StrokeWithPoints(
 
     @Relation(
         parentColumn = "id",
-        entityColumn = "stroke_id"
+        entityColumn = "strokeId"
     )
     val points: List<PointEntity>
 )

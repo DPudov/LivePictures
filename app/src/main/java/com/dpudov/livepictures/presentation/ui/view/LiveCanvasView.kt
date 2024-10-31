@@ -128,7 +128,7 @@ class LiveCanvasView @JvmOverloads constructor(
                 }
                 currentPath.lineTo(x, y)
                 drawPath()
-                onStrokeDrawnListener?.onStrokeDrawn(pathPoints, currentTool, currentPaint.color, currentPaint.strokeWidth)
+//                onStrokeDrawnListener?.onStrokeDrawn(pathPoints, currentTool, currentPaint.color, currentPaint.strokeWidth)
                 currentPath.reset()
                 true
             }
