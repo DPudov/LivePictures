@@ -34,6 +34,7 @@ fun MainScreen(
     val currentFrame by viewModel.currentFrame.collectAsState()
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
     val currentColor by viewModel.selectedColor.collectAsState()
+    val currentStrokes by viewModel.currentStrokes.collectAsState()
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
 
@@ -46,6 +47,9 @@ fun MainScreen(
             frame = currentFrame,
             instrument = currentInstrument,
             color = Color(currentColor).toArgb(),
+            strokes = currentStrokes,
+            onStrokeDrawn = viewModel.onStrokeDrawn,
+            onToolChanged = viewModel.onToolChanged,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(
