@@ -150,7 +150,8 @@ fun MainScreen(
                 },
                 loadPrev = { count ->
                     viewModel.loadPreviousFrames()
-                }
+                },
+                onItemClick = viewModel::selectFrame
             )
         }
     }

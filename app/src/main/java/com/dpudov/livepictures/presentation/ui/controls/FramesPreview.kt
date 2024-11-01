@@ -2,6 +2,7 @@ package com.dpudov.livepictures.presentation.ui.controls
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.domain.model.Frame
 import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.FramePreviewData
 
@@ -36,7 +38,8 @@ fun FramePreviewList(
     frames: List<FramePreviewData> = emptyList(),
     modifier: Modifier = Modifier,
     loadPrev: (Int) -> Unit = {},
-    loadNext: (Int) -> Unit = {}
+    loadNext: (Int) -> Unit = {},
+    onItemClick: (Frame) -> Unit = {}
 ) {
     val visibleFrames = 5
     val listState = rememberLazyListState()
@@ -90,6 +93,9 @@ fun FramePreviewList(
                 bitmap = frame.bitmap.asImageBitmap(),
                 contentDescription = null,
                 modifier = Modifier
+                    .clickable {
+                        onItemClick(frame.frame)
+                    }
                     .width(100.dp)
                     .height(200.dp)
                     .padding(4.dp)

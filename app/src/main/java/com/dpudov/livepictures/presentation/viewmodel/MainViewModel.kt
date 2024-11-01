@@ -329,6 +329,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun selectFrame(newFrame: Frame) {
+        _currentFrame.update { newFrame }
+        refreshTrigger.tryEmit(Unit)
+    }
+
     private suspend fun updateCurrentFrame(newFrame: Frame) {
         _currentFrame.update { newFrame }
         refreshTrigger.emit(Unit)
