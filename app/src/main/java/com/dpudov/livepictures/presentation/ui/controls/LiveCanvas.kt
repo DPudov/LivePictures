@@ -160,13 +160,15 @@ fun LiveCanvas(
 
 fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
     if (stroke.points.isEmpty()) return
+    val initialPoint = stroke.points.first()
     val path = android.graphics.Path().apply {
-        moveTo(stroke.points.first().x, stroke.points.first().y)
+        moveTo(initialPoint.x, initialPoint.y)
         for (point in stroke.points.drop(1)) {
             lineTo(point.x, point.y)
         }
     }
     val paint = android.graphics.Paint().apply {
+        isAntiAlias = true
         this.color =
             if (stroke.instrument == Instrument.Eraser) android.graphics.Color.TRANSPARENT
             else stroke.color
@@ -176,6 +178,8 @@ fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
         strokeWidth = stroke.thickness
         style = android.graphics.Paint.Style.STROKE
         strokeCap = android.graphics.Paint.Cap.ROUND
+        clearShadowLayer()
     }
+
     drawPath(path, paint)
 }

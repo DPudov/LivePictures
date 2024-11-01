@@ -1,5 +1,9 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -13,12 +17,14 @@ import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
+import com.dpudov.livepictures.presentation.model.FramePreviewData
 import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
 import com.dpudov.livepictures.util.combineAny
 import com.dpudov.livepictures.util.tickerFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +34,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -56,7 +63,24 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
-    val framesCache: StateFlow<List<Frame>> = _framesCache
+    val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
+        .map { frameList ->
+            frameList.map { frame ->
+                val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+
+                strokes.forEach {
+                    canvas.drawStroke(it)
+                }
+                FramePreviewData(
+                    frame = frame,
+                    bitmap = bitmap
+                )
+            }
+        }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> =
@@ -256,13 +280,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun showFrames() {
+    fun updatePreviewCache() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            val framesInCache = framesCache.value
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            val framesInCache = _framesCache.value
 
-            requireNotNull(currentAnimationId) { "No animation available yet" }
-
+            Log.d(javaClass.simpleName, "Frames in cache: $framesInCache")
             if (framesInCache.isEmpty()) {
                 val loadedFrames = frameRepository.loadNextFrames(
                     animationId = currentAnimationId,
@@ -276,10 +299,8 @@ class MainViewModel @Inject constructor(
 
     fun loadNextFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            val framesInCache = framesCache.value
-
-            requireNotNull(currentAnimationId) { "No animation available yet" }
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            val framesInCache = _framesCache.value
 
             val lastFrameId = framesInCache.lastOrNull()?.id
             val loadedFrames = frameRepository.loadNextFrames(
@@ -287,16 +308,15 @@ class MainViewModel @Inject constructor(
                 lastFrameId = lastFrameId,
                 pageSize = PAGE_SIZE
             )
-            _framesCache.update { loadedFrames }
+            val newCache = framesInCache.takeLast(PAGE_SIZE) + loadedFrames
+            _framesCache.update { newCache }
         }
     }
 
     fun loadPreviousFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            val framesInCache = framesCache.value
-
-            requireNotNull(currentAnimationId) { "No animation available yet" }
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            val framesInCache = _framesCache.value
 
             val firstFrameId = framesInCache.firstOrNull()?.id
             val loadedFrames = frameRepository.loadPreviousFrames(
@@ -304,8 +324,14 @@ class MainViewModel @Inject constructor(
                 firstFrameId = firstFrameId,
                 pageSize = PAGE_SIZE
             )
-            _framesCache.update { loadedFrames }
+            val newCache = loadedFrames + framesInCache.take(PAGE_SIZE)
+            _framesCache.update { newCache }
         }
+    }
+
+    fun selectFrame(newFrame: Frame) {
+        _currentFrame.update { newFrame }
+        refreshTrigger.tryEmit(Unit)
     }
 
     private suspend fun updateCurrentFrame(newFrame: Frame) {
@@ -398,6 +424,32 @@ class MainViewModel @Inject constructor(
 
     fun pauseAnimation() {
         _animationState.update { AnimationState.Idle }
+    }
+
+    private fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
+        if (stroke.points.isEmpty()) return
+        val initialPoint = stroke.points.first()
+        val path = android.graphics.Path().apply {
+            moveTo(initialPoint.x, initialPoint.y)
+            for (point in stroke.points.drop(1)) {
+                lineTo(point.x, point.y)
+            }
+        }
+        val paint = android.graphics.Paint().apply {
+            isAntiAlias = true
+            this.color =
+                if (stroke.instrument == Instrument.Eraser) android.graphics.Color.TRANSPARENT
+                else stroke.color
+            xfermode =
+                if (stroke.instrument == Instrument.Eraser) PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+                else null
+            strokeWidth = stroke.thickness
+            style = android.graphics.Paint.Style.STROKE
+            strokeCap = android.graphics.Paint.Cap.ROUND
+            clearShadowLayer()
+        }
+
+        drawPath(path, paint)
     }
 
     companion object {

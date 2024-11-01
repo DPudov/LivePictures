@@ -97,7 +97,10 @@ fun FrameControls(
             onClick = onAddFrame
         )
 
-        ShowFramesButton(onClick = onShowFrames)
+        ShowFramesButton(
+            buttonState = ButtonState.Active,
+            onClick = onShowFrames
+        )
     }
 }
 

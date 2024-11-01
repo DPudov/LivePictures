@@ -2,10 +2,13 @@ package com.dpudov.livepictures.presentation.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -23,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
+import com.dpudov.livepictures.presentation.ui.controls.FramePreviewList
 import com.dpudov.livepictures.presentation.ui.controls.LiveCanvas
 import com.dpudov.livepictures.presentation.ui.controls.Toolbar
 import com.dpudov.livepictures.presentation.viewmodel.MainViewModel
@@ -42,9 +46,11 @@ fun MainScreen(
     val startState by viewModel.startState.collectAsState()
     val pauseState by viewModel.pauseState.collectAsState()
     val animationState by viewModel.animationState.collectAsState()
+    val framePreviews by viewModel.framePreviews.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
+    var isFramePreviewVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -72,7 +78,8 @@ fun MainScreen(
                     color = MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .fillMaxSize()
+                .width(1080.dp)
+                .height(1920.dp)
         )
         Toolbar(
             undoState = undoState,
@@ -94,7 +101,10 @@ fun MainScreen(
                 .fillMaxWidth(),
             onAddFrame = viewModel::addFrame,
             onDeleteFrame = viewModel::deleteFrame,
-            onShowFrames = viewModel::showFrames,
+            onShowFrames = {
+                isFramePreviewVisible = true
+                viewModel.updatePreviewCache()
+            },
             onUndo = viewModel::undo,
             onRedo = viewModel::redo,
             onStart = viewModel::startAnimation,
@@ -126,6 +136,24 @@ fun MainScreen(
             selectedInstrument = currentInstrument,
             onSelection = viewModel::selectInstrument
         )
+        if (isFramePreviewVisible) {
+            FramePreviewList(
+                modifier = Modifier
+                    .clickable {
+                        isFramePreviewVisible = false
+                    }
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+                frames = framePreviews,
+                loadNext = { count ->
+                    viewModel.loadNextFrames()
+                },
+                loadPrev = { count ->
+                    viewModel.loadPreviousFrames()
+                },
+                onItemClick = viewModel::selectFrame
+            )
+        }
     }
 }
 
