@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
 import com.dpudov.livepictures.presentation.ui.controls.LiveCanvas
 import com.dpudov.livepictures.presentation.ui.controls.Toolbar
@@ -35,6 +36,9 @@ fun MainScreen(
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
     val currentColor by viewModel.selectedColor.collectAsState()
     val currentStrokes by viewModel.currentStrokes.collectAsState()
+    val undoState by viewModel.undoState.collectAsState()
+    val redoState by viewModel.redoState.collectAsState()
+
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
 
@@ -65,6 +69,10 @@ fun MainScreen(
                 .fillMaxSize()
         )
         Toolbar(
+            undoState = undoState,
+            redoState = redoState,
+            removeState = ButtonState.Active,
+            addState = ButtonState.Active,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(16.dp)
@@ -78,7 +86,9 @@ fun MainScreen(
                 .fillMaxWidth(),
             onAddFrame = viewModel::addFrame,
             onDeleteFrame = viewModel::deleteFrame,
-            onShowFrames = viewModel::showFrames
+            onShowFrames = viewModel::showFrames,
+            onUndo = viewModel::undo,
+            onRedo = viewModel::redo
         )
         DrawingBar(
             selectedColor = Color(currentColor),

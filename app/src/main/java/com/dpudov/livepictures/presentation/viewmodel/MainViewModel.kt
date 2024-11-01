@@ -10,6 +10,7 @@ import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
+import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -49,6 +51,8 @@ class MainViewModel @Inject constructor(
 
     private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
 
+    private val redoStack: MutableStateFlow<List<Stroke>> = MutableStateFlow(emptyList())
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val currentStrokes: StateFlow<List<Stroke>> = refreshTrigger
         .flatMapLatest {
@@ -70,6 +74,20 @@ class MainViewModel @Inject constructor(
 
     private val _selectedColor: MutableStateFlow<ULong> = MutableStateFlow(Color.White.value)
     val selectedColor: StateFlow<ULong> = _selectedColor
+
+    val undoState: StateFlow<ButtonState> = currentStrokes
+        .map {
+            if (it.isEmpty()) ButtonState.Inactive
+            else ButtonState.Active
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+    val redoState: StateFlow<ButtonState> = redoStack
+        .map { stack ->
+            if (stack.isEmpty()) ButtonState.Inactive
+            else ButtonState.Active
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+
 
     init {
         setupAnimation()
@@ -250,6 +268,29 @@ class MainViewModel @Inject constructor(
 
     fun selectColor(color: ULong) {
         _selectedColor.update { color }
+    }
+
+    fun undo() {
+        viewModelScope.launch {
+            val lastStroke = currentStrokes.value.lastOrNull() ?: return@launch
+            redoStack.update {
+                it + lastStroke
+            }
+            strokeRepository.removeStroke(lastStroke.id)
+            refreshTrigger.emit(Unit)
+        }
+    }
+
+    fun redo() {
+        viewModelScope.launch {
+            val currentStack = redoStack.value
+            if (currentStack.isNotEmpty()) {
+                val redoStroke = currentStack.last()
+                redoStack.update { it.dropLast(1) }
+                strokeRepository.addStroke(redoStroke)
+                refreshTrigger.emit(Unit)
+            }
+        }
     }
 
     companion object {
