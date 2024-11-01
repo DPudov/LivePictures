@@ -12,4 +12,6 @@
     <string name="eraser">Eraser</string>
     <string name="instruments">Instruments</string>
     <string name="no_frame_exist_add_one_to_start_drawing">No frame exist. Add one to start drawing</string>
+    <string name="choose_color">Choose color</string>
+    <string name="canvas_background">Canvas background</string>
 </resources>

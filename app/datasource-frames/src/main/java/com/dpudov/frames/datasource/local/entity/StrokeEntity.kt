@@ -15,7 +15,7 @@ data class StrokeEntity(
 
     val thickness: Float,
 
-    val instrumentId: UUID,
+    val instrument: InstrumentEnum,
 
     val finishTimestamp: Long
 )

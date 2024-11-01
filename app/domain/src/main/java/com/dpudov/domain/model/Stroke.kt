@@ -11,7 +11,9 @@ data class Stroke(
 
     val thickness: Float,
 
-    val instrumentId: UUID,
+    val instrument: Instrument,
 
-    val finishTimestamp: Long
+    val finishTimestamp: Long,
+
+    val points: List<Point>
 ) : DrawableItem

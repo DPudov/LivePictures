@@ -13,6 +13,10 @@ import com.dpudov.livepictures.presentation.model.ButtonState
 @Preview
 fun Toolbar(
     modifier: Modifier = Modifier,
+    undoState: ButtonState = ButtonState.Inactive,
+    redoState: ButtonState = ButtonState.Inactive,
+    removeState: ButtonState = ButtonState.Inactive,
+    addState: ButtonState = ButtonState.Inactive,
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onDeleteFrame: () -> Unit = {},
@@ -26,11 +30,15 @@ fun Toolbar(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         HistoryControls(
+            undoState = undoState,
+            redoState = redoState,
             onUndo = onUndo,
             onRedo = onRedo
         )
 
         FrameControls(
+            addState = addState,
+            removeState = removeState,
             onDeleteFrame = onDeleteFrame,
             onAddFrame = onAddFrame,
             onShowFrames = onShowFrames
@@ -47,27 +55,43 @@ fun Toolbar(
 @Composable
 @Preview
 fun HistoryControls(
+    undoState: ButtonState = ButtonState.Inactive,
+    redoState: ButtonState = ButtonState.Inactive,
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {}
 ) {
     Row {
-        UndoButton(onClick = onUndo)
+        UndoButton(
+            buttonState = undoState,
+            onClick = onUndo
+        )
 
-        RedoButton(onClick = onRedo)
+        RedoButton(
+            buttonState = redoState,
+            onClick = onRedo
+        )
     }
 }
 
 @Composable
 @Preview
 fun FrameControls(
+    removeState: ButtonState = ButtonState.Inactive,
+    addState: ButtonState = ButtonState.Inactive,
     onDeleteFrame: () -> Unit = {},
     onAddFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {}
 ) {
     Row {
-        RemoveFrameButton(onClick = onDeleteFrame)
+        RemoveFrameButton(
+            buttonState = removeState,
+            onClick = onDeleteFrame
+        )
 
-        AddFrameButton(onClick = onAddFrame)
+        AddFrameButton(
+            buttonState = addState,
+            onClick = onAddFrame
+        )
 
         ShowFramesButton(onClick = onShowFrames)
     }

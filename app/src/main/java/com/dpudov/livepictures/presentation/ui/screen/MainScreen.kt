@@ -11,11 +11,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
 import com.dpudov.livepictures.presentation.ui.controls.LiveCanvas
 import com.dpudov.livepictures.presentation.ui.controls.Toolbar
@@ -28,10 +34,26 @@ fun MainScreen(
 ) {
     val currentFrame by viewModel.currentFrame.collectAsState()
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
-    
-    Box(modifier = modifier.fillMaxSize()) {
+    val currentColor by viewModel.selectedColor.collectAsState()
+    val currentStrokes by viewModel.currentStrokes.collectAsState()
+    val undoState by viewModel.undoState.collectAsState()
+    val redoState by viewModel.redoState.collectAsState()
+
+    var isColorPadVisible by remember { mutableStateOf(false) }
+    var isColorPickerVisible by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier
+            .background(color = MaterialTheme.colorScheme.surface)
+            .fillMaxSize()
+    ) {
         LiveCanvas(
             frame = currentFrame,
+            instrument = currentInstrument,
+            color = Color(currentColor).toArgb(),
+            strokes = currentStrokes,
+            onStrokeDrawn = viewModel.onStrokeDrawn,
+            onToolChanged = viewModel.onToolChanged,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(
@@ -47,6 +69,10 @@ fun MainScreen(
                 .fillMaxSize()
         )
         Toolbar(
+            undoState = undoState,
+            redoState = redoState,
+            removeState = ButtonState.Active,
+            addState = ButtonState.Active,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(16.dp)
@@ -60,9 +86,22 @@ fun MainScreen(
                 .fillMaxWidth(),
             onAddFrame = viewModel::addFrame,
             onDeleteFrame = viewModel::deleteFrame,
-            onShowFrames = viewModel::showFrames
+            onShowFrames = viewModel::showFrames,
+            onUndo = viewModel::undo,
+            onRedo = viewModel::redo
         )
         DrawingBar(
+            selectedColor = Color(currentColor),
+            isColorPadVisible = isColorPadVisible,
+            onColorPadToggle = {
+                isColorPadVisible = !isColorPadVisible
+            },
+            onColorSelectionChanged = { color ->
+                viewModel.selectColor(color.value)
+            },
+            onPaletteClick = {
+                isColorPickerVisible = !isColorPickerVisible
+            },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)

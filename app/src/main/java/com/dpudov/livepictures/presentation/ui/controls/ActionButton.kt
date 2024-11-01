@@ -18,6 +18,7 @@ fun ActionButton(
     contentDescription: String,
     modifier: Modifier = Modifier
 ) {
+    val enabled = buttonState == ButtonState.Active
     val id = when (buttonState) {
         ButtonState.Active -> activeDrawableId
         ButtonState.Inactive -> inactiveDrawableId
@@ -28,7 +29,8 @@ fun ActionButton(
     }
     IconButton(
         modifier = modifier,
-        onClick = onClick
+        onClick = onClick,
+        enabled = enabled
     ) {
         Icon(
             tint = tint,

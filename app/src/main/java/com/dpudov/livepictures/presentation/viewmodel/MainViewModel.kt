@@ -1,18 +1,29 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.model.Instrument
+import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
+import com.dpudov.livepictures.presentation.model.ButtonState
+import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
+import com.dpudov.livepictures.presentation.model.OnToolChanged
+import com.dpudov.livepictures.presentation.model.ToolForStylus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,8 +34,12 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val animationRepository: IAnimationRepository,
     private val frameRepository: IFrameRepository,
-    private val strokeRepository: IStrokeRepository
+    private val strokeRepository: IStrokeRepository,
+//    private val instrumentRepository: IInstrumentRepository
 ) : ViewModel() {
+//    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
+//        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     val currentAnimation: StateFlow<Animation?> = animationRepository.getLatestAnimation()
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -34,13 +49,67 @@ class MainViewModel @Inject constructor(
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> = _currentFrame
 
+    private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
+
+    private val redoStack: MutableStateFlow<List<Stroke>> = MutableStateFlow(emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val currentStrokes: StateFlow<List<Stroke>> = refreshTrigger
+        .flatMapLatest {
+            currentFrame.mapLatest { frame ->
+                frame ?: return@mapLatest emptyList()
+                strokeRepository.getStrokesByFrameId(frame.id)
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+
+    private val _previousInstrument: MutableStateFlow<Instrument> =
+        MutableStateFlow(Instrument.Pencil)
+    val previousInstrument: StateFlow<Instrument> = _previousInstrument
+
     private val _selectedInstrument: MutableStateFlow<Instrument> =
         MutableStateFlow(Instrument.Pencil)
     val selectedInstrument: StateFlow<Instrument> = _selectedInstrument
 
+    private val _selectedColor: MutableStateFlow<ULong> = MutableStateFlow(Color.White.value)
+    val selectedColor: StateFlow<ULong> = _selectedColor
+
+    val undoState: StateFlow<ButtonState> = currentStrokes
+        .map {
+            if (it.isEmpty()) ButtonState.Inactive
+            else ButtonState.Active
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+    val redoState: StateFlow<ButtonState> = redoStack
+        .map { stack ->
+            if (stack.isEmpty()) ButtonState.Inactive
+            else ButtonState.Active
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+
+
     init {
         setupAnimation()
     }
+
+    val onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { stroke ->
+        addStroke(stroke)
+    }
+
+    val onToolChanged: OnToolChanged = OnToolChanged { newTool ->
+        when (newTool) {
+            ToolForStylus.ERASER -> selectInstrument(Instrument.Eraser)
+            ToolForStylus.DEFAULT -> selectInstrument(previousInstrument.value)
+        }
+    }
+
+//    private fun setupInstruments() {
+//        viewModelScope.launch {
+//            instrumentRepository.addInstrument(Instrument.Pencil)
+//            instrumentRepository.addInstrument()
+//        }
+//    }
 
     private fun setupAnimation() {
         viewModelScope.launch {
@@ -62,7 +131,7 @@ class MainViewModel @Inject constructor(
                     nextId = null
                 )
                 frameRepository.addFrame(newFrame)
-                _currentFrame.update { newFrame }
+                updateCurrentFrame(newFrame)
             } else {
                 val lastFrame = frameRepository.loadLastFrame(animation.id)
                 if (lastFrame == null) {
@@ -73,11 +142,18 @@ class MainViewModel @Inject constructor(
                         prevId = null,
                         nextId = null
                     )
-                    _currentFrame.update { newFrame }
+                    updateCurrentFrame(newFrame)
                 } else {
-                    _currentFrame.update { lastFrame }
+                    updateCurrentFrame(lastFrame)
                 }
             }
+        }
+    }
+
+    private fun addStroke(stroke: Stroke) {
+        viewModelScope.launch {
+            strokeRepository.addStroke(stroke)
+            refreshTrigger.emit(Unit)
         }
     }
 
@@ -133,6 +209,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private suspend fun updateCurrentFrame(newFrame: Frame) {
+        _currentFrame.update { newFrame }
+        refreshTrigger.emit(Unit)
+    }
+
     fun addFrame() {
         viewModelScope.launch {
             val currentAnimationId = currentAnimation.value?.id
@@ -146,7 +227,7 @@ class MainViewModel @Inject constructor(
                 nextId = currentFrame?.nextId
             )
             frameRepository.addFrame(newFrame)
-            _currentFrame.update { newFrame }
+            updateCurrentFrame(newFrame)
         }
     }
 
@@ -164,7 +245,9 @@ class MainViewModel @Inject constructor(
                     animationId = currentAnimationId,
                     id = newCurrentFrameId
                 )
-                _currentFrame.update { newCurrentFrame }
+                if (newCurrentFrame != null) {
+                    updateCurrentFrame(newCurrentFrame)
+                }
             } else {
                 val newId = UUID.randomUUID()
                 val newFrame = Frame(
@@ -173,13 +256,41 @@ class MainViewModel @Inject constructor(
                     prevId = null,
                     nextId = null
                 )
-                _currentFrame.update { newFrame }
+                updateCurrentFrame(newFrame)
             }
         }
     }
 
     fun selectInstrument(instrument: Instrument) {
+        _previousInstrument.update { selectedInstrument.value }
         _selectedInstrument.update { instrument }
+    }
+
+    fun selectColor(color: ULong) {
+        _selectedColor.update { color }
+    }
+
+    fun undo() {
+        viewModelScope.launch {
+            val lastStroke = currentStrokes.value.lastOrNull() ?: return@launch
+            redoStack.update {
+                it + lastStroke
+            }
+            strokeRepository.removeStroke(lastStroke.id)
+            refreshTrigger.emit(Unit)
+        }
+    }
+
+    fun redo() {
+        viewModelScope.launch {
+            val currentStack = redoStack.value
+            if (currentStack.isNotEmpty()) {
+                val redoStroke = currentStack.last()
+                redoStack.update { it.dropLast(1) }
+                strokeRepository.addStroke(redoStroke)
+                refreshTrigger.emit(Unit)
+            }
+        }
     }
 
     companion object {
