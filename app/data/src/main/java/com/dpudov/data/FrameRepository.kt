@@ -33,6 +33,9 @@ class FrameRepository(
     override suspend fun loadFirstFrame(animationId: UUID): Frame? =
         localDaoService.loadFirstFrame(animationId)
 
+    override suspend fun loadById(id: UUID): Frame? =
+        localDaoService.loadById(id)
+
     override suspend fun loadById(animationId: UUID, id: UUID): Frame? =
         localDaoService.loadById(animationId, id)
 

@@ -64,16 +64,33 @@ class MainViewModel @Inject constructor(
             frame
         }
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    val prevFrame: StateFlow<Frame?> = currentFrame
+        .map { frame ->
+            val prevId = frame?.prevId ?: return@map null
+            frameRepository.loadById(prevId)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
 
     private val redoStack: MutableStateFlow<List<Stroke>> = MutableStateFlow(emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val currentStrokes: StateFlow<List<Stroke>> = currentFrame
-        .combineAny(refreshTrigger) { frame, _ -> frame}
+        .combineAny(refreshTrigger) { frame, _ -> frame }
         .mapLatest { frame ->
             frame ?: return@mapLatest emptyList()
             strokeRepository.getStrokesByFrameId(frame.id)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val previousStrokes: StateFlow<List<Stroke>> = prevFrame
+        .combineAny(refreshTrigger) { frame, _ -> frame }
+        .mapLatest { frame ->
+            frame ?: return@mapLatest emptyList()
+            strokeRepository.getStrokesByFrameId(frame.id).map {
+                it.copy(color = makeSemiTransparentColor(argb = it.color, alphaFactor = 0.5f))
+            }
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -154,6 +171,18 @@ class MainViewModel @Inject constructor(
 //        }
 //    }
 
+    private fun makeSemiTransparentColor(argb: Int, alphaFactor: Float): Int {
+        // Ensure alphaFactor is between 0 (fully transparent) and 1 (fully opaque)
+        val alpha = (android.graphics.Color.alpha(argb) * alphaFactor).toInt()
+
+        return android.graphics.Color.argb(
+            alpha,
+            android.graphics.Color.red(argb),
+            android.graphics.Color.green(argb),
+            android.graphics.Color.blue(argb)
+        )
+    }
+
     private fun changeFrame() {
         viewModelScope.launch {
             val currentAnimation = currentAnimation.value ?: return@launch
@@ -162,7 +191,10 @@ class MainViewModel @Inject constructor(
             Log.d(javaClass.simpleName, "Changing frame ${currentFrame.id} to frame $nextId")
 
             if (nextId == null) {
-                Log.d(javaClass.simpleName, "Toggling to first frame of animation: ${currentAnimation.id}")
+                Log.d(
+                    javaClass.simpleName,
+                    "Toggling to first frame of animation: ${currentAnimation.id}"
+                )
                 val firstFrame = frameRepository.loadFirstFrame(animationId = currentAnimation.id)
                     ?: return@launch
                 Log.d(javaClass.simpleName, "First frame id is: ${firstFrame.id}")
