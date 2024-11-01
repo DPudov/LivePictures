@@ -2,6 +2,7 @@ package com.dpudov.livepictures.presentation.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,7 +46,7 @@ fun MainScreen(
     val startState by viewModel.startState.collectAsState()
     val pauseState by viewModel.pauseState.collectAsState()
     val animationState by viewModel.animationState.collectAsState()
-    val framesBitmaps by viewModel.framesBitmaps.collectAsState()
+    val framePreviews by viewModel.framePreviews.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
@@ -101,8 +102,8 @@ fun MainScreen(
             onAddFrame = viewModel::addFrame,
             onDeleteFrame = viewModel::deleteFrame,
             onShowFrames = {
-                viewModel.showFrames()
-                isFramePreviewVisible = !isFramePreviewVisible
+                isFramePreviewVisible = true
+                viewModel.updatePreviewCache()
             },
             onUndo = viewModel::undo,
             onRedo = viewModel::redo,
@@ -138,9 +139,12 @@ fun MainScreen(
         if (isFramePreviewVisible) {
             FramePreviewList(
                 modifier = Modifier
+                    .clickable {
+                        isFramePreviewVisible = false
+                    }
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
-                frames = framesBitmaps,
+                frames = framePreviews,
                 loadNext = { count ->
                     viewModel.loadNextFrames()
                 },

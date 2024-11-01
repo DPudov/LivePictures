@@ -17,6 +17,7 @@ import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
+import com.dpudov.livepictures.presentation.model.FramePreviewData
 import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
@@ -62,8 +63,7 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
-    val framesCache: StateFlow<List<Frame>> = _framesCache
-    val framesBitmaps: StateFlow<List<Bitmap>> = framesCache
+    val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
         .map { frameList ->
             frameList.map { frame ->
                 val strokes = strokeRepository.getStrokesByFrameId(frame.id)
@@ -73,7 +73,10 @@ class MainViewModel @Inject constructor(
                 strokes.forEach {
                     canvas.drawStroke(it)
                 }
-                bitmap
+                FramePreviewData(
+                    frame = frame,
+                    bitmap = bitmap
+                )
             }
         }
         .flowOn(Dispatchers.Default)
@@ -277,13 +280,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun showFrames() {
+    fun updatePreviewCache() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            val framesInCache = framesCache.value
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            val framesInCache = _framesCache.value
 
-            requireNotNull(currentAnimationId) { "No animation available yet" }
-
+            Log.d(javaClass.simpleName, "Frames in cache: $framesInCache")
             if (framesInCache.isEmpty()) {
                 val loadedFrames = frameRepository.loadNextFrames(
                     animationId = currentAnimationId,
@@ -297,10 +299,8 @@ class MainViewModel @Inject constructor(
 
     fun loadNextFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            val framesInCache = framesCache.value
-
-            requireNotNull(currentAnimationId) { "No animation available yet" }
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            val framesInCache = _framesCache.value
 
             val lastFrameId = framesInCache.lastOrNull()?.id
             val loadedFrames = frameRepository.loadNextFrames(
@@ -308,16 +308,15 @@ class MainViewModel @Inject constructor(
                 lastFrameId = lastFrameId,
                 pageSize = PAGE_SIZE
             )
-            _framesCache.update { loadedFrames }
+            val newCache = framesInCache.takeLast(PAGE_SIZE) + loadedFrames
+            _framesCache.update { newCache }
         }
     }
 
     fun loadPreviousFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            val framesInCache = framesCache.value
-
-            requireNotNull(currentAnimationId) { "No animation available yet" }
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            val framesInCache = _framesCache.value
 
             val firstFrameId = framesInCache.firstOrNull()?.id
             val loadedFrames = frameRepository.loadPreviousFrames(
@@ -325,7 +324,8 @@ class MainViewModel @Inject constructor(
                 firstFrameId = firstFrameId,
                 pageSize = PAGE_SIZE
             )
-            _framesCache.update { loadedFrames }
+            val newCache = loadedFrames + framesInCache.take(PAGE_SIZE)
+            _framesCache.update { newCache }
         }
     }
 
