@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -157,9 +158,14 @@ class MainViewModel @Inject constructor(
             val currentAnimation = currentAnimation.value ?: return@launch
             val currentFrame = currentFrame.value ?: return@launch
             val nextId = currentFrame.nextId
+            Log.d(javaClass.simpleName, "Changing frame ${currentFrame.id} to frame $nextId")
+
             if (nextId == null) {
+                Log.d(javaClass.simpleName, "Toggling to first frame of animation: ${currentAnimation.id}")
                 val firstFrame = frameRepository.loadFirstFrame(animationId = currentAnimation.id)
                     ?: return@launch
+                Log.d(javaClass.simpleName, "First frame id is: ${firstFrame.id}")
+
                 updateCurrentFrame(firstFrame)
             } else {
                 val newFrame = frameRepository.loadById(
