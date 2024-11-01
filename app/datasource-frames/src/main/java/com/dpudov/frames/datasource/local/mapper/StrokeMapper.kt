@@ -1,5 +1,6 @@
 package com.dpudov.frames.datasource.local.mapper
 
+import com.dpudov.domain.model.Point
 import com.dpudov.domain.model.Stroke
 import com.dpudov.frames.datasource.local.entity.PointEntity
 import com.dpudov.frames.datasource.local.entity.StrokeEntity
@@ -32,4 +33,9 @@ fun Stroke.toEntity(): StrokeEntity = StrokeEntity(
     thickness = thickness,
     instrument = instrument.toEnum(),
     finishTimestamp = finishTimestamp
+)
+
+fun Stroke.toComposite(): StrokeWithPoints = StrokeWithPoints(
+    stroke = toEntity(),
+    points = points.map(Point::toEntity)
 )

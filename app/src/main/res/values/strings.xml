@@ -16,4 +16,5 @@
     <string name="canvas_background">Canvas background</string>
     <string name="frame_preview">Frame preview</string>
     <string name="frames_not_available_yet">Frames not available yet</string>
+    <string name="copy_frame">Copy frame</string>
 </resources>

@@ -35,6 +35,13 @@ class StrokeDaoService(
         }
     }
 
+    override suspend fun addAll(strokes: List<Stroke>) {
+        withContext(dispatcher) {
+            strokeDao.addAll(strokes.map(Stroke::toEntity))
+            pointDao.insertAll(strokes.flatMap(Stroke::points).map(Point::toEntity))
+        }
+    }
+
     override suspend fun removeStroke(strokeId: UUID) {
         withContext(dispatcher) {
             strokeDao.removeStroke(strokeId)

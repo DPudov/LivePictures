@@ -14,6 +14,10 @@ class StrokeRepository(
         localDaoService.addStroke(stroke)
     }
 
+    override suspend fun addAll(strokes: List<Stroke>) {
+        localDaoService.addAll(strokes)
+    }
+
     override suspend fun removeStroke(strokeId: UUID) {
         localDaoService.removeStroke(strokeId)
     }

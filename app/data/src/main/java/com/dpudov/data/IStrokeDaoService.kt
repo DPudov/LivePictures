@@ -8,5 +8,7 @@ interface IStrokeDaoService {
 
     suspend fun addStroke(stroke: Stroke)
 
+    suspend fun addAll(strokes: List<Stroke>)
+
     suspend fun removeStroke(strokeId: UUID)
 }
