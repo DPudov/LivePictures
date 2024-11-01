@@ -41,6 +41,9 @@ interface FrameDao {
     @Query("delete from frames where id = :frameId")
     suspend fun removeFrame(frameId: UUID)
 
+    @Query("delete from frames where animationId = :animationId")
+    suspend fun removeByAnimationId(animationId: UUID)
+
     @Query("update frames set nextFrameId = :newNextId WHERE id = :prevFrameId")
     suspend fun updateNextIdOnPrev(prevFrameId: UUID, newNextId: UUID?)
 

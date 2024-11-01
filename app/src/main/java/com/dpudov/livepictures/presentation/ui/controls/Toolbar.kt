@@ -23,6 +23,7 @@ fun Toolbar(
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onDeleteFrame: () -> Unit = {},
+    onDeleteAll: () -> Unit = {},
     onAddFrame: () -> Unit = {},
     onCopyFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {},
@@ -45,6 +46,7 @@ fun Toolbar(
             removeState = removeState,
             copyState = copyState,
             onDeleteFrame = onDeleteFrame,
+            onDeleteAll = onDeleteAll,
             onAddFrame = onAddFrame,
             onCopyFrame = onCopyFrame,
             onShowFrames = onShowFrames
@@ -88,6 +90,7 @@ fun FrameControls(
     addState: ButtonState = ButtonState.Inactive,
     copyState: ButtonState = ButtonState.Inactive,
     onDeleteFrame: () -> Unit = {},
+    onDeleteAll: () -> Unit = {},
     onAddFrame: () -> Unit = {},
     onCopyFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {}
@@ -95,7 +98,8 @@ fun FrameControls(
     Row {
         RemoveFrameButton(
             buttonState = removeState,
-            onClick = onDeleteFrame
+            onClick = onDeleteFrame,
+            onLongClick = onDeleteAll
         )
 
         AddFrameButton(
@@ -170,13 +174,15 @@ fun RedoButton(
 @Preview
 fun RemoveFrameButton(
     buttonState: ButtonState = ButtonState.Inactive,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     ActionButton(
         activeDrawableId = R.drawable.ic_bin,
         inactiveDrawableId = R.drawable.ic_bin,
         buttonState = buttonState,
         onClick = onClick,
+        onLongClick = onLongClick,
         contentDescription = stringResource(R.string.remove_frame)
     )
 }

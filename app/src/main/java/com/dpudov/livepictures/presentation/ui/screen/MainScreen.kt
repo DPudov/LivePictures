@@ -104,6 +104,7 @@ fun MainScreen(
                 .fillMaxWidth(),
             onAddFrame = viewModel::addFrame,
             onDeleteFrame = viewModel::deleteFrame,
+            onDeleteAll = viewModel::deleteAll,
             onCopyFrame = viewModel::copyFrame,
             onShowFrames = {
                 isFramePreviewVisible = true
