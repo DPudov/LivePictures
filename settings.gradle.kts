@@ -1,4 +1,7 @@
 @file:Suppress("UnstableApiUsage")
+
+include(":app:feature-gif")
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
