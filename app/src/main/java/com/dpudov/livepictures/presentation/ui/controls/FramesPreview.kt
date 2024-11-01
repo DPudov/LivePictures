@@ -55,7 +55,7 @@ fun FramePreviewList(
     }
     if (frames.isEmpty()) {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .height(200.dp)
                 .fillMaxWidth()
         ) {
@@ -67,7 +67,7 @@ fun FramePreviewList(
     }
     LazyRow(
         state = listState,
-        modifier = Modifier
+        modifier = modifier
             .height(200.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
