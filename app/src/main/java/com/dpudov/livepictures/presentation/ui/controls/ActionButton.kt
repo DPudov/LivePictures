@@ -64,19 +64,13 @@ fun ActionButton(
     }
 
     Icon(
-        modifier = if (enabled) modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = onLongClick
-        ) else modifier,
+        modifier = if (enabled) modifier
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ) else modifier,
         tint = tint,
         painter = painterResource(id = id),
         contentDescription = contentDescription
     )
-//    IconButton(
-//
-//        onClick = {  },
-//        enabled = enabled
-//    ) {
-//
-//    }
 }

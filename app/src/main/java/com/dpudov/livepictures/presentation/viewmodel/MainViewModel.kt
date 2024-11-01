@@ -295,6 +295,7 @@ class MainViewModel @Inject constructor(
                         prevId = null,
                         nextId = null
                     )
+                    frameRepository.addFrame(newFrame)
                     updateCurrentFrame(newFrame)
                 } else {
                     updateCurrentFrame(lastFrame)
@@ -410,6 +411,7 @@ class MainViewModel @Inject constructor(
                     prevId = null,
                     nextId = null
                 )
+                frameRepository.addFrame(newFrame)
                 updateCurrentFrame(newFrame)
             }
         }
@@ -420,7 +422,15 @@ class MainViewModel @Inject constructor(
             val currentAnimationId = currentAnimation.value?.id ?: return@launch
             Log.d(javaClass.simpleName, "Performing reset for animation: $currentAnimationId")
             frameRepository.removeByAnimation(currentAnimationId)
-            refreshTrigger.emit(Unit)
+            val newId = UUID.randomUUID()
+            val newFrame = Frame(
+                id = newId,
+                animationId = currentAnimationId,
+                prevId = null,
+                nextId = null
+            )
+            frameRepository.addFrame(newFrame)
+            updateCurrentFrame(newFrame)
         }
     }
 
