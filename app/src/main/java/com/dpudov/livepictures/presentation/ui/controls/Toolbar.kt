@@ -3,6 +3,7 @@ package com.dpudov.livepictures.presentation.ui.controls
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +24,7 @@ fun Toolbar(
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onDeleteFrame: () -> Unit = {},
+    onDeleteAll: () -> Unit = {},
     onAddFrame: () -> Unit = {},
     onCopyFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {},
@@ -31,6 +33,7 @@ fun Toolbar(
 ) {
     Row(
         modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         HistoryControls(
@@ -45,6 +48,7 @@ fun Toolbar(
             removeState = removeState,
             copyState = copyState,
             onDeleteFrame = onDeleteFrame,
+            onDeleteAll = onDeleteAll,
             onAddFrame = onAddFrame,
             onCopyFrame = onCopyFrame,
             onShowFrames = onShowFrames
@@ -88,14 +92,16 @@ fun FrameControls(
     addState: ButtonState = ButtonState.Inactive,
     copyState: ButtonState = ButtonState.Inactive,
     onDeleteFrame: () -> Unit = {},
+    onDeleteAll: () -> Unit = {},
     onAddFrame: () -> Unit = {},
     onCopyFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {}
 ) {
-    Row {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         RemoveFrameButton(
             buttonState = removeState,
-            onClick = onDeleteFrame
+            onClick = onDeleteFrame,
+            onLongClick = onDeleteAll
         )
 
         AddFrameButton(
@@ -170,13 +176,15 @@ fun RedoButton(
 @Preview
 fun RemoveFrameButton(
     buttonState: ButtonState = ButtonState.Inactive,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
     ActionButton(
         activeDrawableId = R.drawable.ic_bin,
         inactiveDrawableId = R.drawable.ic_bin,
         buttonState = buttonState,
         onClick = onClick,
+        onLongClick = onLongClick,
         contentDescription = stringResource(R.string.remove_frame)
     )
 }

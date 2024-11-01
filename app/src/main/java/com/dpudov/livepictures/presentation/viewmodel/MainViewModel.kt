@@ -295,6 +295,7 @@ class MainViewModel @Inject constructor(
                         prevId = null,
                         nextId = null
                     )
+                    frameRepository.addFrame(newFrame)
                     updateCurrentFrame(newFrame)
                 } else {
                     updateCurrentFrame(lastFrame)
@@ -388,8 +389,7 @@ class MainViewModel @Inject constructor(
 
     fun deleteFrame() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id
-            requireNotNull(currentAnimationId) { "No animation available yet" }
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
             val currentFrame = currentFrame.value
             if (currentFrame != null) {
                 frameRepository.removeFrame(frame = currentFrame)
@@ -411,8 +411,26 @@ class MainViewModel @Inject constructor(
                     prevId = null,
                     nextId = null
                 )
+                frameRepository.addFrame(newFrame)
                 updateCurrentFrame(newFrame)
             }
+        }
+    }
+
+    fun deleteAll() {
+        viewModelScope.launch {
+            val currentAnimationId = currentAnimation.value?.id ?: return@launch
+            Log.d(javaClass.simpleName, "Performing reset for animation: $currentAnimationId")
+            frameRepository.removeByAnimation(currentAnimationId)
+            val newId = UUID.randomUUID()
+            val newFrame = Frame(
+                id = newId,
+                animationId = currentAnimationId,
+                prevId = null,
+                nextId = null
+            )
+            frameRepository.addFrame(newFrame)
+            updateCurrentFrame(newFrame)
         }
     }
 

@@ -90,4 +90,10 @@ class FrameDaoService(
             frameDao.removeFrame(frameId = frame.id)
         }
     }
+
+    override suspend fun removeByAnimation(animationId: UUID) {
+        withContext(dispatcher) {
+            frameDao.removeByAnimationId(animationId)
+        }
+    }
 }

@@ -46,4 +46,8 @@ class FrameRepository(
     override suspend fun removeFrame(frame: Frame) {
         localDaoService.removeFrame(frame)
     }
+
+    override suspend fun removeByAnimation(animationId: UUID) {
+        localDaoService.removeByAnimation(animationId)
+    }
 }

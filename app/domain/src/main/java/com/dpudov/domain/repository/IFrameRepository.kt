@@ -23,4 +23,6 @@ interface IFrameRepository {
     suspend fun addFrame(frame: Frame)
 
     suspend fun removeFrame(frame: Frame)
+
+    suspend fun removeByAnimation(animationId: UUID)
 }
