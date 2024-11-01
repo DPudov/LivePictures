@@ -17,12 +17,14 @@ fun Toolbar(
     redoState: ButtonState = ButtonState.Inactive,
     removeState: ButtonState = ButtonState.Inactive,
     addState: ButtonState = ButtonState.Inactive,
+    copyState: ButtonState = ButtonState.Inactive,
     pauseState: ButtonState = ButtonState.Inactive,
     startState: ButtonState = ButtonState.Active,
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onDeleteFrame: () -> Unit = {},
     onAddFrame: () -> Unit = {},
+    onCopyFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {},
     onStart: () -> Unit = {},
     onPause: () -> Unit = {}
@@ -41,8 +43,10 @@ fun Toolbar(
         FrameControls(
             addState = addState,
             removeState = removeState,
+            copyState = copyState,
             onDeleteFrame = onDeleteFrame,
             onAddFrame = onAddFrame,
+            onCopyFrame = onCopyFrame,
             onShowFrames = onShowFrames
         )
 
@@ -82,8 +86,10 @@ fun HistoryControls(
 fun FrameControls(
     removeState: ButtonState = ButtonState.Inactive,
     addState: ButtonState = ButtonState.Inactive,
+    copyState: ButtonState = ButtonState.Inactive,
     onDeleteFrame: () -> Unit = {},
     onAddFrame: () -> Unit = {},
+    onCopyFrame: () -> Unit = {},
     onShowFrames: () -> Unit = {}
 ) {
     Row {
@@ -95,6 +101,11 @@ fun FrameControls(
         AddFrameButton(
             buttonState = addState,
             onClick = onAddFrame
+        )
+
+        CopyFrameButton(
+            buttonState = copyState,
+            onClick = onCopyFrame
         )
 
         ShowFramesButton(
@@ -182,6 +193,21 @@ fun AddFrameButton(
         buttonState = buttonState,
         onClick = onClick,
         contentDescription = stringResource(R.string.add_frame)
+    )
+}
+
+@Composable
+@Preview
+fun CopyFrameButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_frame_copy,
+        inactiveDrawableId = R.drawable.ic_frame_copy,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.copy_frame)
     )
 }
 

@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
 import com.dpudov.livepictures.presentation.ui.controls.FramePreviewList
 import com.dpudov.livepictures.presentation.ui.controls.LiveCanvas
@@ -43,6 +42,9 @@ fun MainScreen(
     val currentStrokes by viewModel.currentStrokes.collectAsState()
     val undoState by viewModel.undoState.collectAsState()
     val redoState by viewModel.redoState.collectAsState()
+    val addState by viewModel.addState.collectAsState()
+    val removeState by viewModel.removeState.collectAsState()
+    val copyState by viewModel.copyState.collectAsState()
     val startState by viewModel.startState.collectAsState()
     val pauseState by viewModel.pauseState.collectAsState()
     val animationState by viewModel.animationState.collectAsState()
@@ -86,8 +88,9 @@ fun MainScreen(
             redoState = redoState,
             startState = startState,
             pauseState = pauseState,
-            removeState = ButtonState.Active,
-            addState = ButtonState.Active,
+            removeState = removeState,
+            addState = addState,
+            copyState = copyState,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(16.dp)
@@ -101,6 +104,7 @@ fun MainScreen(
                 .fillMaxWidth(),
             onAddFrame = viewModel::addFrame,
             onDeleteFrame = viewModel::deleteFrame,
+            onCopyFrame = viewModel::copyFrame,
             onShowFrames = {
                 isFramePreviewVisible = true
                 viewModel.updatePreviewCache()

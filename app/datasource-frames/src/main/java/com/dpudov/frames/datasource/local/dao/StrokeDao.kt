@@ -21,6 +21,9 @@ interface StrokeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addStroke(stroke: StrokeEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addAll(strokes: List<StrokeEntity>)
+
     @Query("delete from strokes where id = :strokeId")
     suspend fun removeStroke(strokeId: UUID)
 }

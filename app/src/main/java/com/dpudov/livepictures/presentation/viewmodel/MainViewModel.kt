@@ -141,6 +141,36 @@ class MainViewModel @Inject constructor(
             else ButtonState.Active
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+
+    val addState: StateFlow<ButtonState> = animationState
+        .map { state ->
+            if (state == AnimationState.Running) {
+                ButtonState.Inactive
+            } else {
+                ButtonState.Active
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+
+    val removeState: StateFlow<ButtonState> = animationState
+        .map { state ->
+            if (state == AnimationState.Running) {
+                ButtonState.Inactive
+            } else {
+                ButtonState.Active
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+
+    val copyState: StateFlow<ButtonState> = animationState
+        .map { state ->
+            if (state == AnimationState.Running) {
+                ButtonState.Inactive
+            } else {
+                ButtonState.Active
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
     val pauseState: StateFlow<ButtonState> = animationState
         .map { state ->
             if (state == AnimationState.Running) {
@@ -424,6 +454,36 @@ class MainViewModel @Inject constructor(
 
     fun pauseAnimation() {
         _animationState.update { AnimationState.Idle }
+    }
+
+    fun copyFrame() {
+        viewModelScope.launch {
+            val currentFrame = _currentFrame.value ?: return@launch
+            val currentStrokes = currentStrokes.value
+
+            val copyFrameId = UUID.randomUUID()
+            val copyFrame = currentFrame.copy(
+                id = copyFrameId,
+                prevId = currentFrame.id,
+                nextId = currentFrame.nextId
+            )
+            val copyStrokes = currentStrokes.map { stroke ->
+                val id = UUID.randomUUID()
+                stroke.copy(
+                    id = id,
+                    frameId = copyFrameId,
+                    points = stroke.points.map { point ->
+                        point.copy(
+                            id = 0L,
+                            strokeId = id
+                        )
+                    }
+                )
+            }
+            frameRepository.addFrame(copyFrame)
+            strokeRepository.addAll(copyStrokes)
+            updateCurrentFrame(copyFrame)
+        }
     }
 
     private fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
