@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "72d91f4337bbdf36791be873d618c87a",
+    "identityHash": "055897b8026fe77ba296361c63c5fec0",
     "entities": [
       {
         "tableName": "animations",
@@ -178,7 +178,7 @@
       },
       {
         "tableName": "points",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `strokeId` BLOB NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `strokeId` BLOB NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL, FOREIGN KEY(`strokeId`) REFERENCES `strokes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -212,13 +212,25 @@
           ]
         },
         "indices": [],
-        "foreignKeys": []
+        "foreignKeys": [
+          {
+            "table": "strokes",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "strokeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '72d91f4337bbdf36791be873d618c87a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '055897b8026fe77ba296361c63c5fec0')"
     ]
   }
 }

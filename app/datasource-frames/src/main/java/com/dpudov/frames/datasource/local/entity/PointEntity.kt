@@ -1,10 +1,21 @@
 package com.dpudov.frames.datasource.local.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.util.UUID
 
-@Entity(tableName = "points")
+@Entity(
+    tableName = "points",
+    foreignKeys = [
+        ForeignKey(
+            entity = StrokeEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["strokeId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class PointEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
