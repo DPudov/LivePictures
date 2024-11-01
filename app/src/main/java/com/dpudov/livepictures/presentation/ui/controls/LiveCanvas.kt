@@ -80,7 +80,7 @@ fun LiveCanvas(
                 .onSizeChanged { size ->
                     canvasSize = size
                 }
-                .pointerInput(frame, strokes, instrument, color) {
+                .pointerInput(strokes, frame, instrument, color) {
                     detectDragGestures(
                         onDragStart = { offset: Offset ->
                             val id = UUID.randomUUID()

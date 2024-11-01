@@ -70,6 +70,7 @@ class MainViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val currentStrokes: StateFlow<List<Stroke>> = currentFrame
+        .combineAny(refreshTrigger) { frame, _ -> frame}
         .mapLatest { frame ->
             frame ?: return@mapLatest emptyList()
             strokeRepository.getStrokesByFrameId(frame.id)
