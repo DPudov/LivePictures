@@ -1,5 +1,9 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -19,6 +23,7 @@ import com.dpudov.livepictures.presentation.model.ToolForStylus
 import com.dpudov.livepictures.util.combineAny
 import com.dpudov.livepictures.util.tickerFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +33,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -57,6 +63,21 @@ class MainViewModel @Inject constructor(
 
     private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
     val framesCache: StateFlow<List<Frame>> = _framesCache
+    val framesBitmaps: StateFlow<List<Bitmap>> = framesCache
+        .map { frameList ->
+            frameList.map { frame ->
+                val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+
+                strokes.forEach {
+                    canvas.drawStroke(it)
+                }
+                bitmap
+            }
+        }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> =
@@ -398,6 +419,32 @@ class MainViewModel @Inject constructor(
 
     fun pauseAnimation() {
         _animationState.update { AnimationState.Idle }
+    }
+
+    private fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
+        if (stroke.points.isEmpty()) return
+        val initialPoint = stroke.points.first()
+        val path = android.graphics.Path().apply {
+            moveTo(initialPoint.x, initialPoint.y)
+            for (point in stroke.points.drop(1)) {
+                lineTo(point.x, point.y)
+            }
+        }
+        val paint = android.graphics.Paint().apply {
+            isAntiAlias = true
+            this.color =
+                if (stroke.instrument == Instrument.Eraser) android.graphics.Color.TRANSPARENT
+                else stroke.color
+            xfermode =
+                if (stroke.instrument == Instrument.Eraser) PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+                else null
+            strokeWidth = stroke.thickness
+            style = android.graphics.Paint.Style.STROKE
+            strokeCap = android.graphics.Paint.Cap.ROUND
+            clearShadowLayer()
+        }
+
+        drawPath(path, paint)
     }
 
     companion object {

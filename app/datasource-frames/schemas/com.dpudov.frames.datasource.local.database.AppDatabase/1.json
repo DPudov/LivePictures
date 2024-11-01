@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "055897b8026fe77ba296361c63c5fec0",
+    "identityHash": "a1e7167d0c6224d9ed12fe298bf85d48",
     "entities": [
       {
         "tableName": "animations",
@@ -38,7 +38,7 @@
       },
       {
         "tableName": "frames",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `animationId` BLOB NOT NULL, `prevFrameId` BLOB, `nextFrameId` BLOB, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `animationId` BLOB NOT NULL, `prevFrameId` BLOB, `nextFrameId` BLOB, PRIMARY KEY(`id`), FOREIGN KEY(`animationId`) REFERENCES `animations`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -72,11 +72,23 @@
           ]
         },
         "indices": [],
-        "foreignKeys": []
+        "foreignKeys": [
+          {
+            "table": "animations",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "animationId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "strokes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `frameId` BLOB NOT NULL, `color` INTEGER NOT NULL, `thickness` REAL NOT NULL, `instrument` TEXT NOT NULL, `finishTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `frameId` BLOB NOT NULL, `color` INTEGER NOT NULL, `thickness` REAL NOT NULL, `instrument` TEXT NOT NULL, `finishTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`frameId`) REFERENCES `frames`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -122,7 +134,19 @@
           ]
         },
         "indices": [],
-        "foreignKeys": []
+        "foreignKeys": [
+          {
+            "table": "frames",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "frameId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "figures",
@@ -230,7 +254,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '055897b8026fe77ba296361c63c5fec0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a1e7167d0c6224d9ed12fe298bf85d48')"
     ]
   }
 }
