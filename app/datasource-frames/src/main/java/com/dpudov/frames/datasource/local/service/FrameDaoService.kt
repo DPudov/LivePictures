@@ -52,6 +52,10 @@ class FrameDaoService(
         frameDao.loadFirstFrame(animationId)?.toData()
     }
 
+    override suspend fun loadById(id: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadById(id)?.toData()
+    }
+
     override suspend fun loadById(animationId: UUID, id: UUID): Frame? = withContext(dispatcher) {
         frameDao.loadById(
             animationId = animationId,

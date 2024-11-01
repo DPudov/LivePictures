@@ -35,9 +35,13 @@ fun MainScreen(
     val currentFrame by viewModel.currentFrame.collectAsState()
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
     val currentColor by viewModel.selectedColor.collectAsState()
+    val previousStrokes by viewModel.previousStrokes.collectAsState()
     val currentStrokes by viewModel.currentStrokes.collectAsState()
     val undoState by viewModel.undoState.collectAsState()
     val redoState by viewModel.redoState.collectAsState()
+    val startState by viewModel.startState.collectAsState()
+    val pauseState by viewModel.pauseState.collectAsState()
+    val animationState by viewModel.animationState.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
@@ -48,9 +52,11 @@ fun MainScreen(
             .fillMaxSize()
     ) {
         LiveCanvas(
+            animationState = animationState,
             frame = currentFrame,
             instrument = currentInstrument,
             color = Color(currentColor).toArgb(),
+            previousStrokes = previousStrokes,
             strokes = currentStrokes,
             onStrokeDrawn = viewModel.onStrokeDrawn,
             onToolChanged = viewModel.onToolChanged,
@@ -71,6 +77,8 @@ fun MainScreen(
         Toolbar(
             undoState = undoState,
             redoState = redoState,
+            startState = startState,
+            pauseState = pauseState,
             removeState = ButtonState.Active,
             addState = ButtonState.Active,
             modifier = Modifier
@@ -88,7 +96,9 @@ fun MainScreen(
             onDeleteFrame = viewModel::deleteFrame,
             onShowFrames = viewModel::showFrames,
             onUndo = viewModel::undo,
-            onRedo = viewModel::redo
+            onRedo = viewModel::redo,
+            onStart = viewModel::startAnimation,
+            onPause = viewModel::pauseAnimation
         )
         DrawingBar(
             selectedColor = Color(currentColor),

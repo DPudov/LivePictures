@@ -16,6 +16,8 @@ interface IFrameDaoService {
 
     suspend fun loadFirstFrame(animationId: UUID): Frame?
 
+    suspend fun loadById(id: UUID): Frame?
+
     suspend fun loadById(animationId: UUID, id: UUID): Frame?
 
     suspend fun addFrame(frame: Frame)
