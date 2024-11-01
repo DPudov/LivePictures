@@ -10,20 +10,27 @@ import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
+import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
+import com.dpudov.livepictures.util.combineAny
+import com.dpudov.livepictures.util.tickerFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,8 +44,12 @@ class MainViewModel @Inject constructor(
     private val strokeRepository: IStrokeRepository,
 //    private val instrumentRepository: IInstrumentRepository
 ) : ViewModel() {
-//    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
+    //    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
 //        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
+    private val _animationState: MutableStateFlow<AnimationState> =
+        MutableStateFlow(AnimationState.Idle)
+    val animationState: StateFlow<AnimationState> = _animationState
 
     val currentAnimation: StateFlow<Animation?> = animationRepository.getLatestAnimation()
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -47,22 +58,22 @@ class MainViewModel @Inject constructor(
     val framesCache: StateFlow<List<Frame>> = _framesCache
 
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
-    val currentFrame: StateFlow<Frame?> = _currentFrame
+    val currentFrame: StateFlow<Frame?> =
+        combineAny(_currentFrame, animationState, refreshTrigger) { frame, animationState, _ ->
+            frame
+        }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
 
     private val redoStack: MutableStateFlow<List<Stroke>> = MutableStateFlow(emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentStrokes: StateFlow<List<Stroke>> = refreshTrigger
-        .flatMapLatest {
-            currentFrame.mapLatest { frame ->
-                frame ?: return@mapLatest emptyList()
-                strokeRepository.getStrokesByFrameId(frame.id)
-            }
+    val currentStrokes: StateFlow<List<Stroke>> = currentFrame
+        .mapLatest { frame ->
+            frame ?: return@mapLatest emptyList()
+            strokeRepository.getStrokesByFrameId(frame.id)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
 
     private val _previousInstrument: MutableStateFlow<Instrument> =
         MutableStateFlow(Instrument.Pencil)
@@ -87,7 +98,37 @@ class MainViewModel @Inject constructor(
             else ButtonState.Active
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+    val pauseState: StateFlow<ButtonState> = animationState
+        .map { state ->
+            if (state == AnimationState.Running) {
+                ButtonState.Active
+            } else {
+                ButtonState.Inactive
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
+    val startState: StateFlow<ButtonState> = animationState
+        .map { state ->
+            if (state == AnimationState.Running) {
+                ButtonState.Inactive
+            } else {
+                ButtonState.Active
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ButtonState.Inactive)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val animationTicker: SharedFlow<Unit> = animationState
+        .flatMapLatest { state ->
+            when (state) {
+                AnimationState.Idle -> emptyFlow()
+                AnimationState.Running -> tickerFlow(1000L)
+            }
+        }
+        .onEach {
+            changeFrame()
+        }
+        .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 0)
 
     init {
         setupAnimation()
@@ -110,6 +151,25 @@ class MainViewModel @Inject constructor(
 //            instrumentRepository.addInstrument()
 //        }
 //    }
+
+    private fun changeFrame() {
+        viewModelScope.launch {
+            val currentAnimation = currentAnimation.value ?: return@launch
+            val currentFrame = currentFrame.value ?: return@launch
+            val nextId = currentFrame.nextId
+            if (nextId == null) {
+                val firstFrame = frameRepository.loadFirstFrame(animationId = currentAnimation.id)
+                    ?: return@launch
+                updateCurrentFrame(firstFrame)
+            } else {
+                val newFrame = frameRepository.loadById(
+                    animationId = currentAnimation.id,
+                    id = nextId
+                ) ?: return@launch
+                updateCurrentFrame(newFrame)
+            }
+        }
+    }
 
     private fun setupAnimation() {
         viewModelScope.launch {
@@ -291,6 +351,14 @@ class MainViewModel @Inject constructor(
                 refreshTrigger.emit(Unit)
             }
         }
+    }
+
+    fun startAnimation() {
+        _animationState.update { AnimationState.Running }
+    }
+
+    fun pauseAnimation() {
+        _animationState.update { AnimationState.Idle }
     }
 
     companion object {

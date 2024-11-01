@@ -17,6 +17,8 @@ fun Toolbar(
     redoState: ButtonState = ButtonState.Inactive,
     removeState: ButtonState = ButtonState.Inactive,
     addState: ButtonState = ButtonState.Inactive,
+    pauseState: ButtonState = ButtonState.Inactive,
+    startState: ButtonState = ButtonState.Active,
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onDeleteFrame: () -> Unit = {},
@@ -45,6 +47,8 @@ fun Toolbar(
         )
 
         AnimationControls(
+            startState = startState,
+            pauseState = pauseState,
             onPause = onPause,
             onStart = onStart
         )
@@ -100,13 +104,21 @@ fun FrameControls(
 @Composable
 @Preview
 fun AnimationControls(
+    pauseState: ButtonState = ButtonState.Inactive,
+    startState: ButtonState = ButtonState.Active,
     onPause: () -> Unit = {},
     onStart: () -> Unit = {}
 ) {
     Row {
-        PauseButton(onClick = onPause)
+        PauseButton(
+            buttonState = pauseState,
+            onClick = onPause
+        )
 
-        StartButton(onClick = onStart)
+        StartButton(
+            buttonState = startState,
+            onClick = onStart
+        )
     }
 }
 
