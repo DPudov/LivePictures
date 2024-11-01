@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.devtools.ksp)
-    alias(libs.plugins.kapt)
 }
 
 android {

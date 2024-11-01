@@ -113,8 +113,7 @@ class MainViewModel @Inject constructor(
                     nextId = null
                 )
                 frameRepository.addFrame(newFrame)
-                _currentFrame.update { newFrame }
-                refreshTrigger.emit(Unit)
+                updateCurrentFrame(newFrame)
             } else {
                 val lastFrame = frameRepository.loadLastFrame(animation.id)
                 if (lastFrame == null) {
@@ -125,11 +124,9 @@ class MainViewModel @Inject constructor(
                         prevId = null,
                         nextId = null
                     )
-                    _currentFrame.update { newFrame }
-                    refreshTrigger.emit(Unit)
+                    updateCurrentFrame(newFrame)
                 } else {
-                    _currentFrame.update { lastFrame }
-                    refreshTrigger.emit(Unit)
+                    updateCurrentFrame(lastFrame)
                 }
             }
         }
@@ -194,6 +191,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private suspend fun updateCurrentFrame(newFrame: Frame) {
+        _currentFrame.update { newFrame }
+        refreshTrigger.emit(Unit)
+    }
+
     fun addFrame() {
         viewModelScope.launch {
             val currentAnimationId = currentAnimation.value?.id
@@ -207,8 +209,7 @@ class MainViewModel @Inject constructor(
                 nextId = currentFrame?.nextId
             )
             frameRepository.addFrame(newFrame)
-            _currentFrame.update { newFrame }
-            refreshTrigger.emit(Unit)
+            updateCurrentFrame(newFrame)
         }
     }
 
@@ -226,8 +227,9 @@ class MainViewModel @Inject constructor(
                     animationId = currentAnimationId,
                     id = newCurrentFrameId
                 )
-                _currentFrame.update { newCurrentFrame }
-                refreshTrigger.emit(Unit)
+                if (newCurrentFrame != null) {
+                    updateCurrentFrame(newCurrentFrame)
+                }
             } else {
                 val newId = UUID.randomUUID()
                 val newFrame = Frame(
@@ -236,8 +238,7 @@ class MainViewModel @Inject constructor(
                     prevId = null,
                     nextId = null
                 )
-                _currentFrame.update { newFrame }
-                refreshTrigger.emit(Unit)
+                updateCurrentFrame(newFrame)
             }
         }
     }

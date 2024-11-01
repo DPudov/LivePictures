@@ -67,21 +67,15 @@ fun LiveCanvas(
                 eraseColor(android.graphics.Color.TRANSPARENT)
             }
     }
-    LaunchedEffect(strokes) {
+    LaunchedEffect(frame, strokes, currentStroke) {
         drawStrokesToBitmap(strokePathCache, strokes)
     }
 
     Box(modifier = modifier) {
         if (frame != null) {
-//            Image(
-//                modifier = Modifier.fillMaxSize(),
-//                contentScale = ContentScale.Crop,
-//                painter = painterResource(R.drawable.paper_texture),
-//                contentDescription = stringResource(R.string.canvas_background)
-//            )
             Canvas(modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(setOf(strokePathCache, instrument, color)) {
+                .pointerInput(frame, strokePathCache, instrument, color) {
                     detectDragGestures(
                         onDragStart = { offset: Offset ->
                             val id = UUID.randomUUID()
@@ -127,13 +121,22 @@ fun LiveCanvas(
                 drawImage(backgroundBitmap)
 
                 drawIntoCanvas { canvas: Canvas ->
-                    canvas.nativeCanvas.drawBitmap(strokePathCache, 0f, 0f, null) // Draw cached strokes
+                    canvas.nativeCanvas.drawBitmap(
+                        strokePathCache,
+                        0f,
+                        0f,
+                        null
+                    )
                 }
 
                 currentStroke?.let { stroke ->
                     val paint = Paint().apply {
-                        this.color = if (stroke.instrument == Instrument.Eraser) Color.Transparent else Color(stroke.color)
-                        blendMode = if (stroke.instrument == Instrument.Eraser) BlendMode.Clear else BlendMode.SrcOver
+                        this.color =
+                            if (stroke.instrument == Instrument.Eraser) Color.Transparent
+                            else Color(stroke.color)
+                        blendMode =
+                            if (stroke.instrument == Instrument.Eraser) BlendMode.Clear
+                            else BlendMode.SrcOver
                         strokeWidth = stroke.thickness
                         style = PaintingStyle.Stroke
                         strokeCap = StrokeCap.Round
@@ -146,36 +149,9 @@ fun LiveCanvas(
                         }
                         canvas.drawPath(path, paint)
                     }
-//                        canvas.drawPath(
-//                            path = Path().apply {
-//                                moveTo(stroke.points.first().x, stroke.points.first().y)
-//                                stroke.points.drop(1).forEach { lineTo(it.x, it.y) }
-//                            },
-//                            paint
-//                        )
                 }
-
-
-//                strokes.forEach { stroke ->
-//                    drawStroke(stroke)
-//                }
-//
-//                currentStroke?.let { stroke ->
-//                    drawStroke(stroke)
-//                }
             }
-//            AndroidView(
-//                factory = { context ->
-//                    LiveCanvasView(context).apply {
-//                        setInstrument(instrument)
-//                        setColor(color)
-//                        onStrokeDrawnListener = onStrokeDrawn
-//                        onToolChangedListener = onToolChanged
-//                    }
-//                }, update = { view ->
-//                    view.setInstrument(instrument)
-//                    view.setColor(color)
-//                })
+
         } else {
             Text(
                 modifier = Modifier.align(Alignment.Center),
@@ -201,22 +177,28 @@ fun DrawScope.drawStroke(stroke: Stroke) {
             width = stroke.thickness,
             cap = StrokeCap.Round
         ),
-        blendMode = if (stroke.instrument == Instrument.Eraser) BlendMode.SrcOut else BlendMode.SrcOver
+        blendMode = if (stroke.instrument == Instrument.Eraser) BlendMode.Clear
+        else BlendMode.SrcOver
     )
 }
 
 fun drawStrokesToBitmap(bitmap: Bitmap, strokes: List<Stroke>) {
     val canvas = android.graphics.Canvas(bitmap)
     val paint = android.graphics.Paint()
+    canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
     strokes.forEach { stroke ->
-        paint.color =
-            if (stroke.instrument == Instrument.Eraser) android.graphics.Color.TRANSPARENT else stroke.color
-        paint.xfermode =
-            if (stroke.instrument == Instrument.Eraser) PorterDuffXfermode(PorterDuff.Mode.CLEAR) else null
-        paint.style = android.graphics.Paint.Style.STROKE
-        paint.strokeCap = android.graphics.Paint.Cap.ROUND
-        paint.strokeWidth = stroke.thickness
+        paint.apply {
+            color =
+                if (stroke.instrument == Instrument.Eraser) android.graphics.Color.TRANSPARENT
+                else stroke.color
+            xfermode =
+                if (stroke.instrument == Instrument.Eraser) PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+                else null
+            style = android.graphics.Paint.Style.STROKE
+            strokeCap = android.graphics.Paint.Cap.ROUND
+            strokeWidth = stroke.thickness
+        }
 
         val path = android.graphics.Path().apply {
             moveTo(stroke.points.first().x, stroke.points.first().y)
