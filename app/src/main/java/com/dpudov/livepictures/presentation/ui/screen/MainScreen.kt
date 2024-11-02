@@ -3,12 +3,12 @@ package com.dpudov.livepictures.presentation.ui.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -22,8 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.presentation.ui.controls.AdditionalBar
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
 import com.dpudov.livepictures.presentation.ui.controls.FramePreviewList
 import com.dpudov.livepictures.presentation.ui.controls.LiveCanvas
@@ -53,112 +55,136 @@ fun MainScreen(
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
     var isFramePreviewVisible by remember { mutableStateOf(false) }
-
+    val context = LocalContext.current
     Box(
         modifier = modifier
             .background(color = MaterialTheme.colorScheme.surface)
             .fillMaxSize()
     ) {
-        LiveCanvas(
-            animationState = animationState,
-            frame = currentFrame,
-            instrument = currentInstrument,
-            color = Color(currentColor).toArgb(),
-            previousStrokes = previousStrokes,
-            strokes = currentStrokes,
-            onStrokeDrawn = viewModel.onStrokeDrawn,
-            onToolChanged = viewModel.onToolChanged,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(
-                    horizontal = 16.dp,
-                    vertical = 80.dp
-                )
-                .clip(RoundedCornerShape(16.dp))
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .width(1080.dp)
-                .height(1920.dp)
-        )
-        Toolbar(
-            undoState = undoState,
-            redoState = redoState,
-            startState = startState,
-            pauseState = pauseState,
-            removeState = removeState,
-            addState = addState,
-            copyState = copyState,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .fillMaxWidth(),
-            onAddFrame = viewModel::addFrame,
-            onDeleteFrame = viewModel::deleteFrame,
-            onDeleteAll = viewModel::deleteAll,
-            onCopyFrame = viewModel::copyFrame,
-            onShowFrames = {
-                isFramePreviewVisible = true
-                viewModel.updatePreviewCache()
-            },
-            onUndo = viewModel::undo,
-            onRedo = viewModel::redo,
-            onStart = viewModel::startAnimation,
-            onPause = viewModel::pauseAnimation
-        )
-        DrawingBar(
-            selectedColor = Color(currentColor),
-            isColorPadVisible = isColorPadVisible,
-            onColorPadToggle = {
-                isColorPadVisible = !isColorPadVisible
-            },
-            onColorSelectionChanged = { color ->
-                viewModel.selectColor(color.value)
-            },
-            onPaletteClick = {
-                isColorPickerVisible = !isColorPickerVisible
-            },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .fillMaxWidth(),
-            selectedInstrument = currentInstrument,
-            onSelection = viewModel::selectInstrument
-        )
-        if (isFramePreviewVisible) {
-            FramePreviewList(
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter),
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Toolbar(
+                undoState = undoState,
+                redoState = redoState,
+                startState = startState,
+                pauseState = pauseState,
+                removeState = removeState,
+                addState = addState,
+                copyState = copyState,
                 modifier = Modifier
-                    .clickable {
-                        isFramePreviewVisible = false
-                    }
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp),
-                frames = framePreviews,
-                loadNext = { count ->
-                    viewModel.loadNextFrames()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth(),
+                onAddFrame = viewModel::addFrame,
+                onDeleteFrame = viewModel::deleteFrame,
+                onDeleteAll = viewModel::deleteAll,
+                onCopyFrame = viewModel::copyFrame,
+                onShowFrames = {
+                    isFramePreviewVisible = true
+                    viewModel.updatePreviewCache()
                 },
-                loadPrev = { count ->
-                    viewModel.loadPreviousFrames()
-                },
-                onItemClick = viewModel::selectFrame
+                onUndo = viewModel::undo,
+                onRedo = viewModel::redo,
+                onStart = viewModel::startAnimation,
+                onPause = viewModel::pauseAnimation
             )
+
+            AdditionalBar(
+                modifier = Modifier
+                    .padding(
+                        bottom = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth(),
+                onShare = {
+                    viewModel.shareAnimation(context)
+                }
+            )
+
+            LiveCanvas(
+                animationState = animationState,
+                frame = currentFrame,
+                instrument = currentInstrument,
+                color = Color(currentColor).toArgb(),
+                previousStrokes = previousStrokes,
+                strokes = currentStrokes,
+                onStrokeDrawn = viewModel.onStrokeDrawn,
+                onToolChanged = viewModel.onToolChanged,
+                modifier = Modifier
+                    .padding(
+                        horizontal = 16.dp,
+                        vertical = 80.dp
+                    )
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+            DrawingBar(
+                selectedColor = Color(currentColor),
+                isColorPadVisible = isColorPadVisible,
+                onColorPadToggle = {
+                    isColorPadVisible = !isColorPadVisible
+                },
+                onColorSelectionChanged = { color ->
+                    viewModel.selectColor(color.value)
+                },
+                onPaletteClick = {
+                    isColorPickerVisible = !isColorPickerVisible
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth(),
+                selectedInstrument = currentInstrument,
+                onSelection = viewModel::selectInstrument
+            )
+            if (isFramePreviewVisible) {
+                FramePreviewList(
+                    modifier = Modifier
+                        .clickable {
+                            isFramePreviewVisible = false
+                        }
+                        .padding(16.dp),
+                    frames = framePreviews,
+                    loadNext = { count ->
+                        viewModel.loadNextFrames()
+                    },
+                    loadPrev = { count ->
+                        viewModel.loadPreviousFrames()
+                    },
+                    onItemClick = viewModel::selectFrame
+                )
+            }
         }
+
+
     }
 }
 
@@ -166,46 +192,65 @@ fun MainScreen(
 @Preview
 fun MainScreenPreview() {
     Box(modifier = Modifier.fillMaxSize()) {
-        LiveCanvas(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(
-                    horizontal = 16.dp,
-                    vertical = 80.dp
-                )
-                .clip(RoundedCornerShape(16.dp))
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .fillMaxSize()
-        )
-        Toolbar(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .fillMaxWidth()
-        )
-        DrawingBar(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .fillMaxWidth()
-        )
+
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter),
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Toolbar(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth()
+            )
+            AdditionalBar(
+                modifier = Modifier
+                    .padding(
+                        bottom = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth()
+            )
+
+            LiveCanvas(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+
+            DrawingBar(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth()
+            )
+        }
     }
 }

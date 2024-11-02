@@ -25,6 +25,7 @@
             <option value="$PROJECT_DIR$/app/data" />
             <option value="$PROJECT_DIR$/app/datasource-frames" />
             <option value="$PROJECT_DIR$/app/domain" />
+            <option value="$PROJECT_DIR$/app/feature-gif" />
             <option value="$PROJECT_DIR$/buildSrc" />
           </set>
         </option>

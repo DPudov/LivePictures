@@ -54,6 +54,7 @@ dependencies {
     implementation(projects.app.domain)
     implementation(projects.app.data)
     implementation(projects.app.datasourceFrames)
+    implementation(projects.app.featureGif)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
