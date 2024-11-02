@@ -23,6 +23,7 @@ import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.FramePreviewData
+import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
@@ -211,6 +212,7 @@ class MainViewModel @Inject constructor(
                     val period = 1000L / fps
                     tickerFlow(period)
                 }
+
                 null -> emptyFlow()
             }
         }
@@ -218,6 +220,10 @@ class MainViewModel @Inject constructor(
             changeFrame()
         }
         .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 0)
+
+    private val _gifPreparationState: MutableStateFlow<GifPreparationState> =
+        MutableStateFlow(GifPreparationState.Idle)
+    val gifPreparationState: StateFlow<GifPreparationState> = _gifPreparationState
 
     init {
         setupAnimation()
@@ -528,43 +534,53 @@ class MainViewModel @Inject constructor(
 
     fun shareAnimation(context: Context) {
         viewModelScope.launch {
-            val currentAnimation = currentAnimation.value ?: return@launch
-            val gifDir = File(context.cacheDir, "shared_gifs")
-            if (!gifDir.exists()) gifDir.mkdirs()
-            val outputFile = File(gifDir, "output.gif")
-            withContext(Dispatchers.Default) {
-                gifRepository.start(outputFile)
-                var lastFrameId: UUID? = null
-                do {
-                    val frames = frameRepository.loadNextFrames(currentAnimation.id, lastFrameId, 1)
-                    Log.d(javaClass.simpleName, "Processing frames: $frames")
-                    lastFrameId = frames.lastOrNull()?.id
-                    val bitmaps = frames.map { frame ->
-                        val strokes = strokeRepository.getStrokesByFrameId(frame.id)
-                        val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                        val canvas = Canvas(bitmap)
+            runCatching {
+                _gifPreparationState.value = GifPreparationState.Loading
+                val currentAnimation = currentAnimation.value ?: return@launch
+                val gifDir = File(context.cacheDir, "shared_gifs")
+                if (!gifDir.exists()) gifDir.mkdirs()
+                val outputFile = File(gifDir, "output.gif")
+                withContext(Dispatchers.Default) {
+                    gifRepository.start(outputFile)
+                    var lastFrameId: UUID? = null
+                    do {
+                        val frames =
+                            frameRepository.loadNextFrames(currentAnimation.id, lastFrameId, 1)
+                        Log.d(javaClass.simpleName, "Processing frames: $frames")
+                        lastFrameId = frames.lastOrNull()?.id
+                        val bitmaps = frames.map { frame ->
+                            val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                            val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                            val canvas = Canvas(bitmap)
 
-                        strokes.forEach {
-                            canvas.drawStroke(it)
+                            strokes.forEach {
+                                canvas.drawStroke(it)
+                            }
+                            Bitmap.createScaledBitmap(bitmap, 240, 426, true)
                         }
-                        bitmap
-                    }
-                    gifRepository.addImages(bitmaps, outputFile)
-                } while (frames.isNotEmpty())
-                gifRepository.finish(outputFile)
-            }
+                        gifRepository.addImages(bitmaps, outputFile)
+                    } while (frames.isNotEmpty())
+                    gifRepository.finish(outputFile)
+                }
 
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                outputFile
-            )
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "image/gif"
-                putExtra(Intent.EXTRA_STREAM, uri)
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    outputFile
+                )
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/octet-stream"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                }
+                val title = context.getString(R.string.share_animation_as_gif)
+                context.startActivity(Intent.createChooser(intent, title))
             }
-            val title = context.getString(R.string.share_animation_as_gif)
-            context.startActivity(Intent.createChooser(intent, title))
+                .onSuccess {
+                    _gifPreparationState.value = GifPreparationState.Idle
+                }
+                .onFailure {
+                    _gifPreparationState.value = GifPreparationState.Idle
+                }
         }
     }
 

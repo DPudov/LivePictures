@@ -11,7 +11,7 @@ interface IGifExporter {
     fun finish(outputFile: File)
 
     companion object {
-        const val DEFAULT_WIDTH = 1080
-        const val DEFAULT_HEIGHT = 1920
+        const val DEFAULT_WIDTH = 240
+        const val DEFAULT_HEIGHT = 426
     }
 }
