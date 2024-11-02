@@ -27,4 +27,6 @@
     <string name="color">Цвет</string>
     <string name="fps">%1$s кадр/сек</string>
     <string name="alpha">Прозрачность</string>
+    <string name="choose_stroke_size">Выбор размера кисти/ластика</string>
+    <string name="size">Размер</string>
 </resources>

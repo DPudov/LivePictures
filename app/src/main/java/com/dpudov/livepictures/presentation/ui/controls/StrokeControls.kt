@@ -30,46 +30,41 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.dpudov.domain.model.Instrument
 import com.dpudov.livepictures.R
 import kotlin.math.roundToInt
 
 @Composable
 @Preview
-fun ColorPicker(
+fun SizePicker(
     initialColor: Color = Color.White,
+    initialSize: Float = Instrument.PENCIL_SIZE,
     isPickerVisible: Boolean = false,
-    onColorPickerToggle: () -> Unit = {},
-    onColorSelected: (Color) -> Unit = {},
+    onPickerToggle: () -> Unit = {},
+    onSizeSelected: (Float) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (isPickerVisible) {
-        ColorSelectionDialog(
+        SizeSelectionDialog(
             initialColor = initialColor,
-            onDismiss = onColorPickerToggle,
-            onNegativeClick = onColorPickerToggle,
-            onPositiveClick = onColorSelected
+            initialSize = initialSize,
+            onDismiss = onPickerToggle,
+            onNegativeClick = onPickerToggle,
+            onPositiveClick = onSizeSelected
         )
     }
 }
 
 @Composable
-fun ColorSelectionDialog(
+fun SizeSelectionDialog(
     initialColor: Color,
+    initialSize: Float,
     onDismiss: () -> Unit,
     onNegativeClick: () -> Unit,
-    onPositiveClick: (Color) -> Unit
+    onPositiveClick: (Float) -> Unit
 ) {
-    var red by remember { mutableFloatStateOf(initialColor.red * 255) }
-    var green by remember { mutableFloatStateOf(initialColor.green * 255) }
-    var blue by remember { mutableFloatStateOf(initialColor.blue * 255) }
-    var alpha by remember { mutableFloatStateOf(initialColor.alpha * 255) }
-
-    val color = Color(
-        red = red.roundToInt(),
-        green = green.roundToInt(),
-        blue = blue.roundToInt(),
-        alpha = alpha.roundToInt()
-    )
+    var size by remember { mutableFloatStateOf(initialSize) }
+    val sizeInDp = size.roundToInt().dp
 
     Dialog(onDismissRequest = onDismiss) {
 
@@ -80,7 +75,7 @@ fun ColorSelectionDialog(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = stringResource(R.string.color),
+                    text = stringResource(R.string.choose_stroke_size),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -95,62 +90,22 @@ fun ColorSelectionDialog(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(40.dp)
+                            .height(sizeInDp)
                             .background(
-                                color,
+                                color = initialColor,
                                 shape = RoundedCornerShape(8.dp)
                             )
                     )
                 }
 
-                ColorSlider(
+                SizeSlider(
                     modifier = Modifier
                         .padding(start = 12.dp, end = 12.dp)
                         .fillMaxWidth(),
-                    title = stringResource(R.string.red),
-                    titleColor = MaterialTheme.colorScheme.onSurface,
-                    rgb = red,
-                    onColorChanged = {
-                        red = it
-                    }
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                ColorSlider(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp)
-                        .fillMaxWidth(),
-                    title = stringResource(R.string.green),
-                    titleColor = MaterialTheme.colorScheme.onSurface,
-                    rgb = green,
-                    onColorChanged = {
-                        green = it
-                    }
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-
-                ColorSlider(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp)
-                        .fillMaxWidth(),
-                    title = stringResource(R.string.blue),
-                    titleColor = MaterialTheme.colorScheme.onSurface,
-                    rgb = blue,
-                    onColorChanged = {
-                        blue = it
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                ColorSlider(
-                    modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp)
-                        .fillMaxWidth(),
-                    title = stringResource(R.string.alpha),
-                    titleColor = MaterialTheme.colorScheme.onSurface,
-                    rgb = alpha,
-                    onColorChanged = {
-                        alpha = it
+                    title = stringResource(R.string.size),
+                    size = size,
+                    onSizeChanged = {
+                        size = it
                     }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
@@ -177,7 +132,7 @@ fun ColorSelectionDialog(
                             .weight(1f)
                             .fillMaxHeight(),
                         onClick = {
-                            onPositiveClick(color)
+                            onPositiveClick(size)
                         },
                     ) {
                         Text(text = stringResource(R.string.ok))
@@ -189,35 +144,36 @@ fun ColorSelectionDialog(
 }
 
 @Composable
-fun ColorSlider(
+fun SizeSlider(
     modifier: Modifier,
     title: String,
-    titleColor: Color,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..255f,
-    rgb: Float,
-    onColorChanged: (Float) -> Unit
+    valueRange: ClosedFloatingPointRange<Float> = Instrument.PENCIL_SIZE..Instrument.MAX_SIZE,
+    size: Float,
+    onSizeChanged: (Float) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = title,
-            color = titleColor,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold
         )
         Row(modifier, verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(8.dp))
             Slider(
-                modifier = Modifier.padding(8.dp).weight(1f),
-                value = rgb,
-                onValueChange = { onColorChanged(it) },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .weight(1f),
+                value = size,
+                onValueChange = { onSizeChanged(it) },
                 valueRange = valueRange,
                 onValueChangeFinished = {}
             )
 
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = rgb.toInt().toString(),
+                text = size.toInt().toString(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 modifier = Modifier.width(30.dp)
