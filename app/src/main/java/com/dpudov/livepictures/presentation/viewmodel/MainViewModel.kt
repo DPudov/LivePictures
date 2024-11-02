@@ -9,6 +9,7 @@ import android.graphics.PorterDuffXfermode
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
@@ -541,6 +542,8 @@ class MainViewModel @Inject constructor(
                 if (!gifDir.exists()) gifDir.mkdirs()
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
+                    val backgroundBitmap = context.getDrawable(R.drawable.paper_texture)
+                        ?.toBitmap(width = 1080, height = 1920)
                     gifRepository.start(currentAnimation.fps, outputFile)
                     var lastFrameId: UUID? = null
                     do {
@@ -550,13 +553,19 @@ class MainViewModel @Inject constructor(
                         lastFrameId = frames.lastOrNull()?.id
                         val bitmaps = frames.map { frame ->
                             val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                            val result = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                            val resultCanvas = Canvas(result)
+                            if (backgroundBitmap != null) {
+                                resultCanvas.drawBitmap(backgroundBitmap, 0f, 0f, null)
+                            }
                             val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
                             val canvas = Canvas(bitmap)
 
                             strokes.forEach {
                                 canvas.drawStroke(it)
                             }
-                            Bitmap.createScaledBitmap(bitmap, 240, 426, true)
+                            resultCanvas.drawBitmap(bitmap, 0f, 0f, null)
+                            Bitmap.createScaledBitmap(result, 240, 426, true)
                         }
                         gifRepository.addImages(bitmaps, outputFile)
                     } while (frames.isNotEmpty())
