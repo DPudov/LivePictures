@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.util.Log
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
@@ -542,7 +543,7 @@ class MainViewModel @Inject constructor(
                 if (!gifDir.exists()) gifDir.mkdirs()
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
-                    val backgroundBitmap = context.getDrawable(R.drawable.paper_texture)
+                    val backgroundBitmap = AppCompatResources.getDrawable(context, R.drawable.paper_texture)
                         ?.toBitmap(width = 1080, height = 1920)
                     gifRepository.start(currentAnimation.fps, outputFile)
                     var lastFrameId: UUID? = null

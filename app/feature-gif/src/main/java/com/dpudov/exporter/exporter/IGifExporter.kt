@@ -6,9 +6,9 @@ import java.io.File
 interface IGifExporter {
     fun start(fps: Int, outputFile: File)
 
-    fun addImagesToGif(images: List<Image>, outputFile: File)
+    fun addImagesToGif(images: List<Image>)
 
-    fun finish(outputFile: File)
+    fun finish()
 
     companion object {
         const val DEFAULT_WIDTH = 240

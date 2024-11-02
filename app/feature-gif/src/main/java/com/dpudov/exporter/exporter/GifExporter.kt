@@ -23,13 +23,13 @@ class GifExporter : IGifExporter {
             GifEncoder(outputStream, IGifExporter.DEFAULT_WIDTH, IGifExporter.DEFAULT_HEIGHT, 0)
     }
 
-    override fun addImagesToGif(images: List<Image>, outputFile: File) {
+    override fun addImagesToGif(images: List<Image>) {
         for (image in images) {
             gifEncoder?.addImage(image, imageOptions)
         }
     }
 
-    override fun finish(outputFile: File) {
+    override fun finish() {
         gifEncoder?.finishEncoding()
     }
 }
