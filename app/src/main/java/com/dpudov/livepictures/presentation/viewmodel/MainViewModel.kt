@@ -140,6 +140,9 @@ class MainViewModel @Inject constructor(
     private val _selectedColor: MutableStateFlow<ULong> = MutableStateFlow(Color.White.value)
     val selectedColor: StateFlow<ULong> = _selectedColor
 
+    private val _selectedSize: MutableStateFlow<Float> = MutableStateFlow(Instrument.PENCIL_SIZE)
+    val selectedSize: StateFlow<Float> = _selectedSize
+
     val undoState: StateFlow<ButtonState> = currentStrokes
         .map {
             if (it.isEmpty()) ButtonState.Inactive
@@ -543,8 +546,9 @@ class MainViewModel @Inject constructor(
                 if (!gifDir.exists()) gifDir.mkdirs()
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
-                    val backgroundBitmap = AppCompatResources.getDrawable(context, R.drawable.paper_texture)
-                        ?.toBitmap(width = 1080, height = 1920)
+                    val backgroundBitmap =
+                        AppCompatResources.getDrawable(context, R.drawable.paper_texture)
+                            ?.toBitmap(width = 1080, height = 1920)
                     gifRepository.start(currentAnimation.fps, outputFile)
                     var lastFrameId: UUID? = null
                     do {
@@ -599,6 +603,10 @@ class MainViewModel @Inject constructor(
             val currentAnimation = currentAnimation.value ?: return@launch
             animationRepository.updateAnimation(currentAnimation.copy(fps = fps))
         }
+    }
+
+    fun selectSize(size: Float) {
+        _selectedSize.update { size }
     }
 
     private fun Canvas.drawStroke(stroke: Stroke) {

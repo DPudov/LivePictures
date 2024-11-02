@@ -55,9 +55,11 @@ fun MainScreen(
     val framePreviews by viewModel.framePreviews.collectAsState()
     val animation by viewModel.currentAnimation.collectAsState()
     val gifPreparationState by viewModel.gifPreparationState.collectAsState()
+    val strokeSize by viewModel.selectedSize.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
+    var isSizePickerVisible by remember { mutableStateOf(false) }
     var isFramePreviewVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     Box(
@@ -128,6 +130,7 @@ fun MainScreen(
                     animationState = animationState,
                     frame = currentFrame,
                     instrument = currentInstrument,
+                    size = strokeSize,
                     color = Color(currentColor).toArgb(),
                     previousStrokes = previousStrokes,
                     strokes = currentStrokes,
@@ -159,11 +162,16 @@ fun MainScreen(
             }
 
             DrawingBar(
+                currentSize = strokeSize,
                 selectedColor = Color(currentColor),
                 isColorPadVisible = isColorPadVisible,
                 isPickerVisible = isColorPickerVisible,
+                isSizePickerVisible = isSizePickerVisible,
                 onColorPickerToggle = {
                     isColorPickerVisible = !isColorPickerVisible
+                },
+                onSizePickerToggle = {
+                    isSizePickerVisible = !isSizePickerVisible
                 },
                 onColorPadToggle = {
                     isColorPadVisible = !isColorPadVisible
@@ -172,6 +180,7 @@ fun MainScreen(
                     viewModel.selectColor(color.value)
                     isColorPadVisible = false
                 },
+                onSizeSelectionChanged = viewModel::selectSize,
                 onPaletteClick = {
                     isColorPickerVisible = !isColorPickerVisible
                 },

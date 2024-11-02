@@ -8,6 +8,8 @@ sealed class Instrument(val name: String) {
     data object Eraser : Instrument(ERASER_NAME)
 
     companion object {
+        const val PENCIL_SIZE = 2f
+        const val MAX_SIZE = 32f
         const val PENCIL_NAME = "pencil_instrument"
         const val BRUSH_NAME = "brush_instrument"
         const val ERASER_NAME = "eraser_instrument"
