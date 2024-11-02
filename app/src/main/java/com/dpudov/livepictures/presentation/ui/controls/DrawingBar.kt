@@ -31,6 +31,7 @@ fun DrawingBar(
     selectedInstrument: Instrument = Instrument.Pencil,
     onSelection: (Instrument) -> Unit = {},
     onColorPadToggle: () -> Unit = {},
+    onColorPickerToggle: () -> Unit = {},
     onColorSelectionChanged: (Color) -> Unit = {},
     onPaletteClick: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -39,10 +40,14 @@ fun DrawingBar(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-//        ColorPicker(
-//            isPickerVisible = isPickerVisible,
-//            onColorSelected = onColorSelectionChanged
-//        )
+        ColorPicker(
+            isPickerVisible = isPickerVisible,
+            onColorSelected = { color ->
+                onColorSelectionChanged(color)
+                onColorPickerToggle()
+            },
+            onColorPickerToggle = onColorPickerToggle
+        )
         ColorPad(
             isVisible = isColorPadVisible,
             onPaletteClick = onPaletteClick,

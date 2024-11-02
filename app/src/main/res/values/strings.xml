@@ -18,4 +18,10 @@
     <string name="frames_not_available_yet">Frames not available yet</string>
     <string name="copy_frame">Copy frame</string>
     <string name="share_animation_as_gif">Share animation as gif</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">Ok</string>
+    <string name="red">Red</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
+    <string name="color">Color</string>
 </resources>

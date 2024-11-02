@@ -143,11 +143,16 @@ fun MainScreen(
             DrawingBar(
                 selectedColor = Color(currentColor),
                 isColorPadVisible = isColorPadVisible,
+                isPickerVisible = isColorPickerVisible,
+                onColorPickerToggle = {
+                    isColorPickerVisible = !isColorPickerVisible
+                },
                 onColorPadToggle = {
                     isColorPadVisible = !isColorPadVisible
                 },
                 onColorSelectionChanged = { color ->
                     viewModel.selectColor(color.value)
+                    isColorPadVisible = false
                 },
                 onPaletteClick = {
                     isColorPickerVisible = !isColorPickerVisible
