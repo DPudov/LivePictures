@@ -7,18 +7,20 @@ import java.io.File
 import java.io.FileOutputStream
 
 class GifExporter : IGifExporter {
-    override fun createGifFromImages(images: List<Image>, outputFile: File) {
-        val outputStream = FileOutputStream(outputFile)
-        outputStream.use {
-            val gifEncoder =
-                GifEncoder(outputStream, IGifExporter.DEFAULT_WIDTH, IGifExporter.DEFAULT_HEIGHT, 0)
-            val imageOptions = ImageOptions()
+    private val imageOptions = ImageOptions()
+    private var gifEncoder: GifEncoder? = null
 
-            for (image in images) {
-                gifEncoder.addImage(image, imageOptions)
-            }
+    override fun addImagesToGif(images: List<Image>, outputFile: File) {
+        val outputStream = FileOutputStream(outputFile, true)
+        gifEncoder =
+            GifEncoder(outputStream, IGifExporter.DEFAULT_WIDTH, IGifExporter.DEFAULT_HEIGHT, 0)
 
-            gifEncoder.finishEncoding()
+        for (image in images) {
+            gifEncoder?.addImage(image, imageOptions)
         }
+    }
+
+    override fun finish(outputFile: File) {
+        gifEncoder?.finishEncoding()
     }
 }

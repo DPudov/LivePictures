@@ -1,11 +1,14 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.util.Log
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
@@ -15,6 +18,8 @@ import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IFrameRepository
 import com.dpudov.domain.repository.IStrokeRepository
+import com.dpudov.exporter.repository.IGifExportRepository
+import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.FramePreviewData
@@ -42,6 +47,8 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
@@ -50,6 +57,7 @@ class MainViewModel @Inject constructor(
     private val animationRepository: IAnimationRepository,
     private val frameRepository: IFrameRepository,
     private val strokeRepository: IStrokeRepository,
+    private val gifRepository: IGifExportRepository
 //    private val instrumentRepository: IInstrumentRepository
 ) : ViewModel() {
     //    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
@@ -504,7 +512,44 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
+    fun shareAnimation(context: Context) {
+        viewModelScope.launch {
+            val currentAnimation = currentAnimation.value ?: return@launch
+            val gifDir = File(context.cacheDir, "shared_gifs")
+            if (!gifDir.exists()) gifDir.mkdirs()
+            val outputFile = File(gifDir, "output.gif")
+            withContext(Dispatchers.Default) {
+                var lastFrameId: UUID? = null
+                do {
+                    val frames = frameRepository.loadNextFrames(currentAnimation.id, lastFrameId, 1)
+                    Log.d(javaClass.simpleName, "Processing frames: $frames")
+                    lastFrameId = frames.lastOrNull()?.id
+                    val bitmaps = frames.map { frame ->
+                        val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                        val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                        val canvas = Canvas(bitmap)
+
+                        strokes.forEach {
+                            canvas.drawStroke(it)
+                        }
+                        bitmap
+                    }
+                    gifRepository.addImages(bitmaps, outputFile)
+                } while (frames.isNotEmpty())
+                gifRepository.finish(outputFile)
+            }
+
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", outputFile)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/gif"
+                putExtra(Intent.EXTRA_STREAM, uri)
+            }
+            val title = context.getString(R.string.share_animation_as_gif)
+            context.startActivity(Intent.createChooser(intent, title))
+        }
+    }
+
+    private fun Canvas.drawStroke(stroke: Stroke) {
         if (stroke.points.isEmpty()) return
         val initialPoint = stroke.points.first()
         val path = android.graphics.Path().apply {

@@ -1,25 +1,40 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    id("java-library")
-    alias(libs.plugins.jetbrains.kotlin.jvm)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_18
-    targetCompatibility = JavaVersion.VERSION_18
-}
+android {
+    namespace = "com.dpudov.exporter"
+    compileSdk = Android.compileSdk
 
-kotlin {
-    compilerOptions {
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
-        jvmTarget.set(JvmTarget.JVM_18)
+    defaultConfig {
+        minSdk = Android.minSdk
+
+        testInstrumentationRunner = Android.testInstrumentationRunner
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
+    }
+    kotlinOptions {
+        jvmTarget = Android.jvmTarget
     }
 }
 
 dependencies {
     implementation(projects.app.domain)
     implementation(libs.coroutines.core)
-    implementation(libs.core.android.lib)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.gifencoder)
 }
