@@ -1,9 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.devtools.ksp)
+}
+
+val appSignPassword: String by project
+
+val pathStoreFile = "$rootDir/signing/LivePicturesKeys.jks"
+
+fun getLocalProperty(key: String, file: String = "local.properties"): String {
+    val properties = Properties()
+    val localProperties = rootProject.file(file)
+    if (localProperties.exists()) {
+        localProperties.inputStream().use { reader ->
+            properties.load(reader)
+        }
+    }
+
+    return properties.getProperty(key) ?: ""
 }
 
 android {
@@ -23,13 +41,45 @@ android {
         }
     }
 
+    signingConfigs {
+        val password by lazy { getLocalProperty("appSignPassword") }
+        getByName("debug") {
+            storeFile = file(pathStoreFile)
+            storePassword = appSignPassword.ifBlank { password }
+            keyAlias = getLocalProperty(
+                "keyAlias",
+                "$rootDir/signing/keystore-debug.properties"
+            )
+            keyPassword = appSignPassword.ifBlank { password }
+        }
+
+        create("release") {
+            storeFile = file(pathStoreFile)
+            storePassword = appSignPassword.ifBlank { password }
+            keyAlias = getLocalProperty(
+                "keyAlias",
+                "$rootDir/signing/keystore-release.properties"
+            )
+            keyPassword = appSignPassword.ifBlank { password }
+        }
+    }
+
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs["debug"]
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs["release"]
         }
     }
     compileOptions {
@@ -68,9 +118,7 @@ dependencies {
     implementation(libs.room.runtime)
 
     implementation(libs.dagger.hilt.android)
-//    ksp(libs.dagger.compiler)
     ksp(libs.dagger.hilt.compiler)
-//    implementation(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
