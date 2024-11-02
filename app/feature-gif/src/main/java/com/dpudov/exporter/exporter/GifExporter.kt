@@ -13,7 +13,11 @@ class GifExporter : IGifExporter {
     }
     private var gifEncoder: GifEncoder? = null
 
-    override fun start(outputFile: File) {
+    override fun start(fps: Int, outputFile: File) {
+        if (fps >= 1) {
+            val delay = 1000L / fps
+            imageOptions.setDelay(delay, TimeUnit.MILLISECONDS)
+        }
         val outputStream = FileOutputStream(outputFile)
         gifEncoder =
             GifEncoder(outputStream, IGifExporter.DEFAULT_WIDTH, IGifExporter.DEFAULT_HEIGHT, 0)

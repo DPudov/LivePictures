@@ -12,9 +12,9 @@ class GifRepository(
     private val gifExporter: IGifExporter,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : IGifExportRepository {
-    override suspend fun start(outputFile: File) {
+    override suspend fun start(fps: Int, outputFile: File) {
         withContext(dispatcher) {
-            gifExporter.start(outputFile)
+            gifExporter.start(fps, outputFile)
         }
     }
 

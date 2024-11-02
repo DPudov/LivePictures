@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.ui.controls.AdditionalBar
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
 import com.dpudov.livepictures.presentation.ui.controls.FramePreviewList
@@ -52,6 +54,7 @@ fun MainScreen(
     val animationState by viewModel.animationState.collectAsState()
     val framePreviews by viewModel.framePreviews.collectAsState()
     val animation by viewModel.currentAnimation.collectAsState()
+    val gifPreparationState by viewModel.gifPreparationState.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
@@ -120,29 +123,41 @@ fun MainScreen(
                 }
             )
 
-            LiveCanvas(
-                animationState = animationState,
-                frame = currentFrame,
-                instrument = currentInstrument,
-                color = Color(currentColor).toArgb(),
-                previousStrokes = previousStrokes,
-                strokes = currentStrokes,
-                onStrokeDrawn = viewModel.onStrokeDrawn,
-                onToolChanged = viewModel.onToolChanged,
-                modifier = Modifier
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 80.dp
-                    )
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    .weight(1f)
-                    .fillMaxWidth()
-            )
+            if (gifPreparationState == GifPreparationState.Idle) {
+                LiveCanvas(
+                    animationState = animationState,
+                    frame = currentFrame,
+                    instrument = currentInstrument,
+                    color = Color(currentColor).toArgb(),
+                    previousStrokes = previousStrokes,
+                    strokes = currentStrokes,
+                    onStrokeDrawn = viewModel.onStrokeDrawn,
+                    onToolChanged = viewModel.onToolChanged,
+                    modifier = Modifier
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 80.dp
+                        )
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .weight(1f)
+                        .fillMaxWidth()
+                )
+            } else {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+
             DrawingBar(
                 selectedColor = Color(currentColor),
                 isColorPadVisible = isColorPadVisible,
