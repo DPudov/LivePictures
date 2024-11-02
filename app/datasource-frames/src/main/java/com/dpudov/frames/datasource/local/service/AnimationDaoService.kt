@@ -23,6 +23,12 @@ class AnimationDaoService(
             entity?.toData()
         }.flowOn(dispatcher)
 
+    override suspend fun updateAnimation(animation: Animation) {
+        withContext(dispatcher) {
+            animationDao.update(animation.toEntity())
+        }
+    }
+
     override suspend fun addAnimation(animation: Animation) {
         withContext(dispatcher) {
             animationDao.addAnimation(animation.toEntity())

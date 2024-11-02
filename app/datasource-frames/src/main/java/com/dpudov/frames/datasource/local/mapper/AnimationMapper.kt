@@ -6,11 +6,13 @@ import com.dpudov.frames.datasource.local.entity.AnimationEntity
 fun AnimationEntity.toData(): Animation = Animation(
     id = id,
     name = name,
-    createdAt = createdAt
+    createdAt = createdAt,
+    fps = fps
 )
 
 fun Animation.toEntity(): AnimationEntity = AnimationEntity(
     id = id,
     name = name,
-    createdAt = createdAt
+    createdAt = createdAt,
+    fps = fps
 )

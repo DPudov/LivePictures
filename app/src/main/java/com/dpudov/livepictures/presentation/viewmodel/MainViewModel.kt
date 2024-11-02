@@ -200,10 +200,18 @@ class MainViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val animationTicker: SharedFlow<Unit> = animationState
-        .flatMapLatest { state ->
+        .combineAny(currentAnimation) { state, animation ->
+            state to animation
+        }
+        .flatMapLatest { (state, animation) ->
             when (state) {
                 AnimationState.Idle -> emptyFlow()
-                AnimationState.Running -> tickerFlow(1000L)
+                AnimationState.Running -> {
+                    val fps = animation?.fps ?: Animation.DEFAULT_FPS
+                    val period = 1000L / fps
+                    tickerFlow(period)
+                }
+                null -> emptyFlow()
             }
         }
         .onEach {
@@ -281,7 +289,8 @@ class MainViewModel @Inject constructor(
                 val newAnimation = Animation(
                     id = id,
                     name = DEFAULT_ANIMATION_NAME,
-                    createdAt = currentTimestamp
+                    createdAt = currentTimestamp,
+                    fps = Animation.DEFAULT_FPS
                 )
                 animationRepository.addAnimation(newAnimation)
                 val frameId = UUID.randomUUID()
@@ -556,6 +565,13 @@ class MainViewModel @Inject constructor(
             }
             val title = context.getString(R.string.share_animation_as_gif)
             context.startActivity(Intent.createChooser(intent, title))
+        }
+    }
+
+    fun selectFps(fps: Int) {
+        viewModelScope.launch {
+            val currentAnimation = currentAnimation.value ?: return@launch
+            animationRepository.updateAnimation(currentAnimation.copy(fps = fps))
         }
     }
 
