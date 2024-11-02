@@ -541,7 +541,7 @@ class MainViewModel @Inject constructor(
                 if (!gifDir.exists()) gifDir.mkdirs()
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
-                    gifRepository.start(outputFile)
+                    gifRepository.start(currentAnimation.fps, outputFile)
                     var lastFrameId: UUID? = null
                     do {
                         val frames =
