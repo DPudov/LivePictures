@@ -19,6 +19,7 @@ kotlin {
 
 dependencies {
     implementation(projects.app.domain)
+    implementation(libs.coroutines.core)
     implementation(libs.core.android.lib)
     implementation(libs.gifencoder)
 }
