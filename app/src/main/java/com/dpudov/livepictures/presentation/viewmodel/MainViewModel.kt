@@ -480,6 +480,11 @@ class MainViewModel @Inject constructor(
 
     fun pauseAnimation() {
         _animationState.update { AnimationState.Idle }
+        viewModelScope.launch {
+            val currentAnimation = currentAnimation.value ?: return@launch
+            val lastFrame = frameRepository.loadLastFrame(currentAnimation.id) ?: return@launch
+            updateCurrentFrame(lastFrame)
+        }
     }
 
     fun copyFrame() {
@@ -540,7 +545,11 @@ class MainViewModel @Inject constructor(
                 gifRepository.finish(outputFile)
             }
 
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", outputFile)
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                outputFile
+            )
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "image/gif"
                 putExtra(Intent.EXTRA_STREAM, uri)
