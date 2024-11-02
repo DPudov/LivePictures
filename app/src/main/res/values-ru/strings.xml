@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Живые картинки</string>
+    <string name="undo_recent_action">Возврат действия</string>
+    <string name="redo_recent_action">Повтор действия</string>
+    <string name="remove_frame">Удаление кадра</string>
+    <string name="add_frame">Добавление кадра</string>
+    <string name="show_frames">Показать кадры</string>
+    <string name="pause_animation">Поставить анимацию на паузу</string>
+    <string name="start_animation">Начать анимацию</string>
+    <string name="draw_with_pencil">Карандаш</string>
+    <string name="draw_with_brush">Кисть</string>
+    <string name="eraser">Ластик</string>
+    <string name="instruments">Инструменты</string>
+    <string name="no_frame_exist_add_one_to_start_drawing">Нет кадров для анимации</string>
+    <string name="choose_color">Выберите цвет</string>
+    <string name="canvas_background">Слой для рисования</string>
+    <string name="frame_preview">Предпросмотр кадра</string>
+    <string name="frames_not_available_yet">Кадры еще не загружены</string>
+    <string name="copy_frame">Дублировать кадр</string>
+    <string name="share_animation_as_gif">Поделиться анимацией как GIF</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">ОК</string>
+    <string name="red">Красный</string>
+    <string name="green">Зеленый</string>
+    <string name="blue">Синий</string>
+    <string name="color">Цвет</string>
+    <string name="fps">%1$s кадр/сек</string>
+    <string name="alpha">Прозрачность</string>
+</resources>

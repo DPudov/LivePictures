@@ -107,7 +107,7 @@ fun ColorSelectionDialog(
                         .padding(start = 12.dp, end = 12.dp)
                         .fillMaxWidth(),
                     title = stringResource(R.string.red),
-                    titleColor = Color.Red,
+                    titleColor = MaterialTheme.colorScheme.onSurface,
                     rgb = red,
                     onColorChanged = {
                         red = it
@@ -119,7 +119,7 @@ fun ColorSelectionDialog(
                         .padding(start = 12.dp, end = 12.dp)
                         .fillMaxWidth(),
                     title = stringResource(R.string.green),
-                    titleColor = Color.Green,
+                    titleColor = MaterialTheme.colorScheme.onSurface,
                     rgb = green,
                     onColorChanged = {
                         green = it
@@ -132,7 +132,7 @@ fun ColorSelectionDialog(
                         .padding(start = 12.dp, end = 12.dp)
                         .fillMaxWidth(),
                     title = stringResource(R.string.blue),
-                    titleColor = Color.Blue,
+                    titleColor = MaterialTheme.colorScheme.onSurface,
                     rgb = blue,
                     onColorChanged = {
                         blue = it
@@ -145,8 +145,8 @@ fun ColorSelectionDialog(
                     modifier = Modifier
                         .padding(start = 12.dp, end = 12.dp)
                         .fillMaxWidth(),
-                    title = "Alpha",
-                    titleColor = Color.Black,
+                    title = stringResource(R.string.alpha),
+                    titleColor = MaterialTheme.colorScheme.onSurface,
                     rgb = alpha,
                     onColorChanged = {
                         alpha = it
@@ -196,29 +196,32 @@ fun ColorSlider(
     rgb: Float,
     onColorChanged: (Float) -> Unit
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
-            text = title.substring(0, 1),
+            text = title,
             color = titleColor,
             fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Slider(
-            modifier = Modifier.weight(1f),
-            value = rgb,
-            onValueChange = { onColorChanged(it) },
-            valueRange = valueRange,
-            onValueChangeFinished = {}
-        )
+        Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Slider(
+                modifier = Modifier.padding(8.dp).weight(1f),
+                value = rgb,
+                onValueChange = { onColorChanged(it) },
+                valueRange = valueRange,
+                onValueChangeFinished = {}
+            )
 
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = rgb.toInt().toString(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp,
-            modifier = Modifier.width(30.dp)
-        )
-
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = rgb.toInt().toString(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                modifier = Modifier.width(30.dp)
+            )
+        }
     }
+
 }

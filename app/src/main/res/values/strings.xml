@@ -19,10 +19,11 @@
     <string name="copy_frame">Copy frame</string>
     <string name="share_animation_as_gif">Share animation as gif</string>
     <string name="cancel">Cancel</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="red">Red</string>
     <string name="green">Green</string>
     <string name="blue">Blue</string>
     <string name="color">Color</string>
     <string name="fps">%1$s FPS</string>
+    <string name="alpha">Alpha</string>
 </resources>
