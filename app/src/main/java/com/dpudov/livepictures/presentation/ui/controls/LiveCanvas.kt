@@ -52,6 +52,7 @@ fun LiveCanvas(
     onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { },
     onToolChanged: OnToolChanged = OnToolChanged { },
     color: Int = StandardColor.WHITE,
+    size: Float = 1f,
     modifier: Modifier = Modifier
 ) {
 //    val context = LocalContext.current
@@ -101,7 +102,7 @@ fun LiveCanvas(
                                         )
                                     ),
                                     color = if (instrument == Instrument.Eraser) Color.Transparent.toArgb() else color,
-                                    thickness = if (instrument == Instrument.Eraser) 20f else 10f,
+                                    thickness = if (instrument == Instrument.Pencil) Instrument.PENCIL_SIZE else size,
                                     instrument = instrument,
                                     finishTimestamp = System.currentTimeMillis()
                                 )

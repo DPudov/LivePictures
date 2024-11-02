@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.ui.controls
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,12 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathBuilder
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,18 +27,23 @@ import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.mapper.toSelectedState
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.SelectedState
+import kotlin.math.roundToInt
 
 @Composable
 @Preview
 fun DrawingBar(
     isColorPadVisible: Boolean = false,
     isPickerVisible: Boolean = false,
+    isSizePickerVisible: Boolean = false,
     selectedColor: Color = Color.White,
+    currentSize: Float = Instrument.PENCIL_SIZE,
     selectedInstrument: Instrument = Instrument.Pencil,
     onSelection: (Instrument) -> Unit = {},
     onColorPadToggle: () -> Unit = {},
     onColorPickerToggle: () -> Unit = {},
+    onSizePickerToggle: () -> Unit = {},
     onColorSelectionChanged: (Color) -> Unit = {},
+    onSizeSelectionChanged: (Float) -> Unit = {},
     onPaletteClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -41,12 +52,23 @@ fun DrawingBar(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         ColorPicker(
+            initialColor = selectedColor,
             isPickerVisible = isPickerVisible,
             onColorSelected = { color ->
                 onColorSelectionChanged(color)
                 onColorPickerToggle()
             },
             onColorPickerToggle = onColorPickerToggle
+        )
+        SizePicker(
+            initialColor = selectedColor,
+            initialSize = currentSize,
+            isPickerVisible = isSizePickerVisible,
+            onPickerToggle = onSizePickerToggle,
+            onSizeSelected = { size ->
+                onSizeSelectionChanged(size)
+                onSizePickerToggle()
+            }
         )
         ColorPad(
             isVisible = isColorPadVisible,
@@ -79,6 +101,11 @@ fun DrawingBar(
             ColorButton(
                 containerColor = selectedColor,
                 onClick = onColorPadToggle
+            )
+            StrokeSizeButton(
+                size = currentSize,
+                color = selectedColor,
+                onClick = onSizePickerToggle
             )
         }
     }
@@ -188,7 +215,7 @@ fun ColorPad(
 @Composable
 @Preview
 fun ColorButton(
-    containerColor: Color = Color.Red,
+    containerColor: Color = Color.White,
     onClick: () -> Unit = {}
 ) {
     OutlinedButton(
@@ -199,5 +226,41 @@ fun ColorButton(
         colors = ButtonDefaults.outlinedButtonColors(containerColor = containerColor),
         shape = CircleShape,
         content = {}
+    )
+}
+
+@Composable
+@Preview
+fun StrokeSizeButton(
+    size: Float = Instrument.PENCIL_SIZE,
+    color: Color = Color.White,
+    onClick: () -> Unit = {}
+) {
+    val sizeInDp = size.roundToInt().dp
+    val lineIcon = ImageVector.Builder(
+        defaultWidth = 32.dp,
+        defaultHeight = sizeInDp,
+        viewportWidth = 32f,
+        viewportHeight = size
+    ).apply {
+        addPath(
+            pathData = PathBuilder().apply {
+                moveTo(0f, 0f)
+                lineTo(32f, 0f)
+                lineTo(32f, size)
+                lineTo(0f, size)
+                close()
+            }.nodes,
+            fill = Brush.linearGradient(colors = listOf(color, color))
+        )
+    }.build()
+
+    Icon(
+        painter = rememberVectorPainter(image = lineIcon),
+        contentDescription = null,
+        tint = color,
+        modifier = Modifier
+            .size(32.dp)
+            .clickable(onClick = onClick)
     )
 }

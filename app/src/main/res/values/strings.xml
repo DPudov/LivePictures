@@ -26,4 +26,6 @@
     <string name="fps">%1$s FPS</string>
     <string name="alpha">Alpha</string>
     <string name="show_frames">Show frames</string>
+    <string name="choose_stroke_size">Choose stroke size</string>
+    <string name="size">Size</string>
 </resources>
