@@ -24,4 +24,5 @@
     <string name="green">Green</string>
     <string name="blue">Blue</string>
     <string name="color">Color</string>
+    <string name="fps">%1$s FPS</string>
 </resources>

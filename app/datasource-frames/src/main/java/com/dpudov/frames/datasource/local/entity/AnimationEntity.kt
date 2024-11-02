@@ -11,5 +11,7 @@ data class AnimationEntity(
 
     val name: String,
 
-    val createdAt: Long
+    val createdAt: Long,
+
+    val fps: Int
 )

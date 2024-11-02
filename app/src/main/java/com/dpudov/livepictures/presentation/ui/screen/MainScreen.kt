@@ -51,6 +51,7 @@ fun MainScreen(
     val pauseState by viewModel.pauseState.collectAsState()
     val animationState by viewModel.animationState.collectAsState()
     val framePreviews by viewModel.framePreviews.collectAsState()
+    val animation by viewModel.currentAnimation.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
@@ -112,6 +113,8 @@ fun MainScreen(
                         shape = RoundedCornerShape(16.dp)
                     )
                     .fillMaxWidth(),
+                onFpsSelected = viewModel::selectFps,
+                defaultFps = animation?.fps ?: 1,
                 onShare = {
                     viewModel.shareAnimation(context)
                 }

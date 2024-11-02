@@ -9,6 +9,10 @@ class AnimationRepository(
 ): IAnimationRepository {
     override fun getLatestAnimation(): Flow<Animation?> = localDaoService.getLatestAnimation()
 
+    override suspend fun updateAnimation(animation: Animation) {
+        localDaoService.updateAnimation(animation)
+    }
+
     override suspend fun addAnimation(animation: Animation) {
         localDaoService.addAnimation(animation)
     }
