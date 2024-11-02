@@ -21,13 +21,13 @@ class GifRepository(
     override suspend fun addImages(images: List<Bitmap>, outputFile: File) {
         withContext(dispatcher) {
             val rgbImages = images.map(Bitmap::toGifFrame)
-            gifExporter.addImagesToGif(rgbImages, outputFile)
+            gifExporter.addImagesToGif(rgbImages)
         }
     }
 
     override suspend fun finish(outputFile: File) {
         withContext(dispatcher) {
-            gifExporter.finish(outputFile)
+            gifExporter.finish()
         }
     }
 }

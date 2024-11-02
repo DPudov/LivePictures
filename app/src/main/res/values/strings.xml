@@ -4,7 +4,6 @@
     <string name="redo_recent_action">Redo recent action</string>
     <string name="remove_frame">Remove frame</string>
     <string name="add_frame">Add frame</string>
-    <string name="show_frames">Show frames</string>
     <string name="pause_animation">Pause animation</string>
     <string name="start_animation">Start animation</string>
     <string name="draw_with_pencil">Draw with pencil</string>
@@ -26,4 +25,5 @@
     <string name="color">Color</string>
     <string name="fps">%1$s FPS</string>
     <string name="alpha">Alpha</string>
+    <string name="show_frames">Show frames</string>
 </resources>
