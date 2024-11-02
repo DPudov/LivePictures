@@ -12,6 +12,12 @@ class GifRepository(
     private val gifExporter: IGifExporter,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : IGifExportRepository {
+    override suspend fun start(outputFile: File) {
+        withContext(dispatcher) {
+            gifExporter.start(outputFile)
+        }
+    }
+
     override suspend fun addImages(images: List<Bitmap>, outputFile: File) {
         withContext(dispatcher) {
             val rgbImages = images.map(Bitmap::toGifFrame)

@@ -4,6 +4,8 @@ import com.squareup.gifencoder.Image
 import java.io.File
 
 interface IGifExporter {
+    fun start(outputFile: File)
+
     fun addImagesToGif(images: List<Image>, outputFile: File)
 
     fun finish(outputFile: File)
