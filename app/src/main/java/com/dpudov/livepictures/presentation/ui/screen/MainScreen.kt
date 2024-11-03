@@ -61,6 +61,7 @@ fun MainScreen(
     var isColorPickerVisible by remember { mutableStateOf(false) }
     var isSizePickerVisible by remember { mutableStateOf(false) }
     var isFramePreviewVisible by remember { mutableStateOf(false) }
+    var isFigurePadVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     Box(
         modifier = modifier
@@ -167,6 +168,7 @@ fun MainScreen(
                 isColorPadVisible = isColorPadVisible,
                 isPickerVisible = isColorPickerVisible,
                 isSizePickerVisible = isSizePickerVisible,
+                isFiguresPadVisible = isFigurePadVisible,
                 onColorPickerToggle = {
                     isColorPickerVisible = !isColorPickerVisible
                 },
@@ -183,6 +185,9 @@ fun MainScreen(
                 onSizeSelectionChanged = viewModel::selectSize,
                 onPaletteClick = {
                     isColorPickerVisible = !isColorPickerVisible
+                },
+                onInstrumentsClick = {
+                    isFigurePadVisible = !isFigurePadVisible
                 },
                 modifier = Modifier
                     .padding(16.dp)
