@@ -29,6 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
+import com.dpudov.domain.model.Circle
+import com.dpudov.domain.model.DrawableItem
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.model.Instrument
 import com.dpudov.domain.model.Point
@@ -45,8 +47,8 @@ import android.graphics.Color as StandardColor
 @Preview
 fun LiveCanvas(
     frame: Frame? = null,
-    previousStrokes: List<Stroke> = emptyList(),
-    strokes: List<Stroke> = emptyList(),
+    previousItems: List<DrawableItem> = emptyList(),
+    items: List<DrawableItem> = emptyList(),
     instrument: Instrument = Instrument.Pencil,
     animationState: AnimationState = AnimationState.Idle,
     onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { },
@@ -55,9 +57,6 @@ fun LiveCanvas(
     size: Float = 1f,
     modifier: Modifier = Modifier
 ) {
-//    val context = LocalContext.current
-//    val backgroundBitmap = ImageBitmap.imageResource(context.resources, R.drawable.paper_texture)
-
     var currentStroke by remember { mutableStateOf<Stroke?>(null) }
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -85,7 +84,7 @@ fun LiveCanvas(
                 .onSizeChanged { size ->
                     canvasSize = size
                 }
-                .pointerInput(strokes, frame, instrument, color) {
+                .pointerInput(items, frame, instrument, color) {
                     if (animationState == AnimationState.Idle) {
                         detectDragGestures(
                             onDragStart = { offset: Offset ->
@@ -134,12 +133,12 @@ fun LiveCanvas(
                     val canvas = android.graphics.Canvas(bitmap)
                     canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
                     if (animationState == AnimationState.Idle) {
-                        previousStrokes.forEach {
-                            canvas.drawStroke(it)
+                        previousItems.forEach {
+                            canvas.drawItem(it)
                         }
                     }
-                    strokes.forEach {
-                        canvas.drawStroke(it)
+                    items.forEach {
+                        canvas.drawItem(it)
                     }
                     currentStroke?.let {
                         canvas.drawStroke(it)
@@ -156,6 +155,13 @@ fun LiveCanvas(
                 text = stringResource(R.string.no_frame_exist_add_one_to_start_drawing)
             )
         }
+    }
+}
+
+fun android.graphics.Canvas.drawItem(item: DrawableItem) {
+    when (item) {
+        is Circle -> drawCircle(item)
+        is Stroke -> drawStroke(item)
     }
 }
 
@@ -182,5 +188,27 @@ fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
         clearShadowLayer()
     }
 
-    drawPath(path, paint)
+    drawPath(
+        /* path = */ path,
+        /* paint = */ paint
+    )
+}
+
+fun android.graphics.Canvas.drawCircle(circle: Circle) {
+    val paint = android.graphics.Paint().apply {
+        isAntiAlias = true
+        this.color = circle.color
+        xfermode = null
+        strokeWidth = circle.thickness
+        style = android.graphics.Paint.Style.STROKE
+        strokeCap = android.graphics.Paint.Cap.ROUND
+        clearShadowLayer()
+    }
+
+    drawCircle(
+        /* cx = */ circle.centerX,
+        /* cy = */ circle.centerY,
+        /* radius = */ circle.radius,
+        /* paint = */ paint
+    )
 }

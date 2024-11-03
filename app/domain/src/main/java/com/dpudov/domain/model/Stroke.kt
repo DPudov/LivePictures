@@ -3,17 +3,17 @@ package com.dpudov.domain.model
 import java.util.UUID
 
 data class Stroke(
-    val id: UUID,
+    override val id: UUID,
 
     val frameId: UUID,
 
-    val color: Int,
+    override val color: Int,
 
-    val thickness: Float,
+    override val thickness: Float,
 
     val instrument: Instrument,
 
-    val finishTimestamp: Long,
+    override val finishTimestamp: Long,
 
     val points: List<Point>
 ) : DrawableItem
