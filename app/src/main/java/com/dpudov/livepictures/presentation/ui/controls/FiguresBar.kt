@@ -20,7 +20,9 @@ fun FiguresBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
+        RectangleButton()
+        TriangleButton()
+        CircleButton()
     }
 }
 
@@ -31,10 +33,40 @@ fun RectangleButton(
     onClick: () -> Unit = {}
 ) {
     ActionButton(
-        activeDrawableId = R.drawable.ic_share,
-        inactiveDrawableId = R.drawable.ic_share,
+        activeDrawableId = R.drawable.ic_rect,
+        inactiveDrawableId = R.drawable.ic_rect,
         buttonState = buttonState,
         onClick = onClick,
-        contentDescription = stringResource(R.string.share_animation_as_gif)
+        contentDescription = stringResource(R.string.add_rectangle)
+    )
+}
+
+@Composable
+@Preview
+fun TriangleButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_triangle,
+        inactiveDrawableId = R.drawable.ic_triangle,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.add_triangle)
+    )
+}
+
+@Composable
+@Preview
+fun CircleButton(
+    buttonState: ButtonState = ButtonState.Inactive,
+    onClick: () -> Unit = {}
+) {
+    ActionButton(
+        activeDrawableId = R.drawable.ic_circle,
+        inactiveDrawableId = R.drawable.ic_circle,
+        buttonState = buttonState,
+        onClick = onClick,
+        contentDescription = stringResource(R.string.add_circle)
     )
 }
