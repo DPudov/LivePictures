@@ -365,6 +365,7 @@ class MainViewModel @Inject constructor(
     private fun addDrawableItem(item: DrawableItem) {
         viewModelScope.launch {
             drawableItemRepository.addItem(item)
+            redoStack.update { emptyList() }
             refreshTrigger.emit(Unit)
         }
     }
@@ -518,7 +519,6 @@ class MainViewModel @Inject constructor(
             if (currentStack.isNotEmpty()) {
                 val redoItem = currentStack.last()
                 redoStack.update { it.dropLast(1) }
-                // TODO: Если добавился новый элемент сбросить стек redo
                 drawableItemRepository.addItem(redoItem)
                 refreshTrigger.emit(Unit)
             }
