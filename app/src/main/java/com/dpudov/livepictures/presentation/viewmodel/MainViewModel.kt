@@ -24,11 +24,13 @@ import com.dpudov.domain.model.Triangle
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IDrawableItemRepository
 import com.dpudov.domain.repository.IFrameRepository
+import com.dpudov.domain.usecase.GenerateFramesUsecase
 import com.dpudov.exporter.repository.IGifExportRepository
 import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.FramePreviewData
+import com.dpudov.livepictures.presentation.model.GenerationState
 import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.model.OnItemDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
@@ -66,7 +68,8 @@ class MainViewModel @Inject constructor(
     private val animationRepository: IAnimationRepository,
     private val frameRepository: IFrameRepository,
     private val gifRepository: IGifExportRepository,
-    private val drawableItemRepository: IDrawableItemRepository
+    private val drawableItemRepository: IDrawableItemRepository,
+    private val generateFramesUsecase: GenerateFramesUsecase
 //    private val instrumentRepository: IInstrumentRepository
 ) : ViewModel() {
     //    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
@@ -254,6 +257,10 @@ class MainViewModel @Inject constructor(
     private val _gifPreparationState: MutableStateFlow<GifPreparationState> =
         MutableStateFlow(GifPreparationState.Idle)
     val gifPreparationState: StateFlow<GifPreparationState> = _gifPreparationState
+
+    private val _generationState: MutableStateFlow<GenerationState> =
+        MutableStateFlow(GenerationState.Idle)
+    val generationState: StateFlow<GenerationState> = _generationState
 
     init {
         setupAnimation()
@@ -626,6 +633,34 @@ class MainViewModel @Inject constructor(
 
     fun selectSize(size: Float) {
         _selectedSize.update { size }
+    }
+
+    fun generateFrames(count: Int) {
+        viewModelScope.launch {
+            runCatching {
+                val animationId = currentAnimation.value?.id ?: return@launch
+                if (count > 0) {
+                    _generationState.update { GenerationState.Generating(0, count) }
+                    generateFramesUsecase(
+                        animationId = animationId,
+                        count = count,
+                        onNumberChanged = { number ->
+                            _generationState.update { GenerationState.Generating(number, count) }
+                        }
+                    )
+                }
+                val lastFrame = frameRepository.loadLastFrame(animationId) ?: return@launch
+                updateCurrentFrame(lastFrame)
+            }
+                .onSuccess {
+                    Log.d(javaClass.simpleName, "Frame generation finished")
+                    _generationState.update { GenerationState.Idle }
+                }
+                .onFailure { throwable ->
+                    Log.e(javaClass.simpleName, "Frame generation failed", throwable)
+                    _generationState.update { GenerationState.Idle }
+                }
+        }
     }
 
     private fun Canvas.drawStroke(stroke: Stroke) {
