@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.presentation.model.GenerationState
 import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.ui.controls.AdditionalBar
 import com.dpudov.livepictures.presentation.ui.controls.DrawingBar
@@ -56,12 +58,14 @@ fun MainScreen(
     val animation by viewModel.currentAnimation.collectAsState()
     val gifPreparationState by viewModel.gifPreparationState.collectAsState()
     val strokeSize by viewModel.selectedSize.collectAsState()
+    val generationState by viewModel.generationState.collectAsState()
 
     var isColorPadVisible by remember { mutableStateOf(false) }
     var isColorPickerVisible by remember { mutableStateOf(false) }
     var isSizePickerVisible by remember { mutableStateOf(false) }
     var isFramePreviewVisible by remember { mutableStateOf(false) }
     var isFigurePadVisible by remember { mutableStateOf(false) }
+    var generationCount by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
     Box(
         modifier = modifier
@@ -123,10 +127,15 @@ fun MainScreen(
                 defaultFps = animation?.fps ?: 1,
                 onShare = {
                     viewModel.shareAnimation(context)
-                }
+                },
+                currentValue = generationCount,
+                onValueChange = { newValue ->
+                    generationCount = newValue
+                },
+                onGenerate = viewModel::generateFrames
             )
 
-            if (gifPreparationState == GifPreparationState.Idle) {
+            if (gifPreparationState == GifPreparationState.Idle && generationState == GenerationState.Idle) {
                 LiveCanvas(
                     animationState = animationState,
                     frame = currentFrame,
@@ -151,7 +160,7 @@ fun MainScreen(
                         .weight(1f)
                         .fillMaxWidth()
                 )
-            } else {
+            } else if (gifPreparationState != GifPreparationState.Idle) {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .padding(16.dp)
@@ -160,6 +169,20 @@ fun MainScreen(
                     color = MaterialTheme.colorScheme.secondary,
                     trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
+            } else if (generationState is GenerationState.Generating) {
+                val state = generationState as? GenerationState.Generating
+                if (state != null) {
+                    val progress = state.number.toFloat() / state.total.toFloat()
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        progress = { progress }
+                    )
+                }
             }
 
             DrawingBar(

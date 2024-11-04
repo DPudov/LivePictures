@@ -31,4 +31,6 @@
     <string name="add_rectangle">Add rectangle</string>
     <string name="add_triangle">Add triangle</string>
     <string name="add_circle">Add circle</string>
+    <string name="generate_n_frames">Generate N frames</string>
+    <string name="generate">Generate</string>
 </resources>

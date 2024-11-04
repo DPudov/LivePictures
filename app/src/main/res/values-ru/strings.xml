@@ -29,4 +29,9 @@
     <string name="alpha">Прозрачность</string>
     <string name="choose_stroke_size">Выбор размера кисти/ластика</string>
     <string name="size">Размер</string>
+    <string name="add_rectangle">Добавить прямоугольник</string>
+    <string name="add_triangle">Добавить треугольник</string>
+    <string name="add_circle">Добавить круг</string>
+    <string name="generate_n_frames">Генерация N кадров</string>
+    <string name="generate">Сгенерировать</string>
 </resources>
