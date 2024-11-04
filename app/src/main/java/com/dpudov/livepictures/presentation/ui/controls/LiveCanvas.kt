@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
@@ -107,7 +106,7 @@ fun LiveCanvas(
 //                }
                 .pointerInput(items, frame, instrument, color, size) {
                     if (animationState == AnimationState.Idle) {
-                        if (instrument in Instrument.tappableInstruments) {
+//                        if (instrument in Instrument.tappableInstruments) {
 //                            detectTapGestures(
 //                                onPress = { offset: Offset ->
 //                                    currentItem = when (instrument) {
@@ -134,86 +133,86 @@ fun LiveCanvas(
 //                                    currentItem = null
 //                                }
 //                            )
-                            awaitPointerEventScope {
-                                while (true) {
-                                    val event = awaitPointerEvent()
-                                    val position = event.changes.first().position
+//                            awaitPointerEventScope {
+//                                while (true) {
+//                                    val event = awaitPointerEvent()
+//                                    val position = event.changes.first().position
+//
+//                                    if (event.changes.first().pressed) {
+//                                        currentItem = when (instrument) {
+//                                            Instrument.Figure.Circle -> Circle(
+//                                                id = UUID.randomUUID(),
+//                                                frameId = frame.id,
+//                                                finishTimestamp = System.currentTimeMillis(),
+//                                                color = color,
+//                                                thickness = size,
+//                                                radius = Circle.DEFAULT_RADIUS,
+//                                                centerX = position.x,
+//                                                centerY = position.y
+//                                            )
+//
+//                                            Instrument.Figure.Rectangle -> TODO()
+//                                            Instrument.Figure.Triangle -> TODO()
+//                                            else -> null
+//                                        }
+//                                    }
+//                                    var initialDistance = 0f
+//                                    var initialAngle = 0f
+//                                    while (event.changes.first().pressed) {
+//                                        val transformEvent = awaitPointerEvent()
+//                                        val pan = transformEvent.changes.first().positionChange()
+//                                        if (transformEvent.changes.size >= 2) {
+//                                            val pointer1 = transformEvent.changes[0].position
+//                                            val pointer2 = transformEvent.changes[1].position
+//
+//                                            val dx = pointer2.x - pointer1.x
+//                                            val dy = pointer2.y - pointer1.y
+//                                            val distance = kotlin.math.sqrt(dx * dx + dy * dy)
+//                                            val angle = kotlin.math.atan2(dy, dx)
+//
+//                                            if (initialDistance == 0f) {
+//                                                initialDistance = distance
+//                                                initialAngle = angle
+//                                            }
+//                                            val zoom = distance / initialDistance
+//                                            val rotation = (angle - initialAngle) * (180 / Math.PI).toFloat()
+//                                            currentItem = currentItem?.let {
+//                                                when (it) {
+//                                                    is Circle -> it.copy(
+//                                                        radius = it.radius * zoom,
+//                                                        centerX = it.centerX + pan.x,
+//                                                        centerY = it.centerY + pan.y
+//                                                    )
+//
+//                                                    is Stroke -> null // do nothing
+//                                                }
+//                                            }
+//                                        } else {
+//                                            currentItem = currentItem?.let {
+//                                                when (it) {
+//                                                    is Circle -> it.copy(
+//                                                        radius = it.radius,
+//                                                        centerX = it.centerX + pan.x,
+//                                                        centerY = it.centerY + pan.y
+//                                                    )
+//
+//                                                    is Stroke -> null // do nothing
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//
+//                                    if (!event.changes.first().pressed) {
+//                                        currentItem?.let {
+//                                            onItemDrawn.onItemDrawn(it)
+//                                        }
+//                                        currentItem = null
+//                                    }
+//                                }
+//                            }
+//                        }
 
-                                    if (event.changes.first().pressed) {
-                                        currentItem = when (instrument) {
-                                            Instrument.Figure.Circle -> Circle(
-                                                id = UUID.randomUUID(),
-                                                frameId = frame.id,
-                                                finishTimestamp = System.currentTimeMillis(),
-                                                color = color,
-                                                thickness = size,
-                                                radius = Circle.DEFAULT_RADIUS,
-                                                centerX = position.x,
-                                                centerY = position.y
-                                            )
-
-                                            Instrument.Figure.Rectangle -> TODO()
-                                            Instrument.Figure.Triangle -> TODO()
-                                            else -> null
-                                        }
-                                    }
-                                    var initialDistance = 0f
-                                    var initialAngle = 0f
-                                    while (event.changes.first().pressed) {
-                                        val transformEvent = awaitPointerEvent()
-                                        val pan = transformEvent.changes.first().positionChange()
-                                        if (transformEvent.changes.size >= 2) {
-                                            val pointer1 = transformEvent.changes[0].position
-                                            val pointer2 = transformEvent.changes[1].position
-
-                                            val dx = pointer2.x - pointer1.x
-                                            val dy = pointer2.y - pointer1.y
-                                            val distance = kotlin.math.sqrt(dx * dx + dy * dy)
-                                            val angle = kotlin.math.atan2(dy, dx)
-
-                                            if (initialDistance == 0f) {
-                                                initialDistance = distance
-                                                initialAngle = angle
-                                            }
-                                            val zoom = distance / initialDistance
-                                            val rotation = (angle - initialAngle) * (180 / Math.PI).toFloat()
-                                            currentItem = currentItem?.let {
-                                                when (it) {
-                                                    is Circle -> it.copy(
-                                                        radius = it.radius * zoom,
-                                                        centerX = it.centerX + pan.x,
-                                                        centerY = it.centerY + pan.y
-                                                    )
-
-                                                    is Stroke -> null // do nothing
-                                                }
-                                            }
-                                        } else {
-                                            currentItem = currentItem?.let {
-                                                when (it) {
-                                                    is Circle -> it.copy(
-                                                        radius = it.radius,
-                                                        centerX = it.centerX + pan.x,
-                                                        centerY = it.centerY + pan.y
-                                                    )
-
-                                                    is Stroke -> null // do nothing
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (!event.changes.first().pressed) {
-                                        currentItem?.let {
-                                            onItemDrawn.onItemDrawn(it)
-                                        }
-                                        currentItem = null
-                                    }
-                                }
-                            }
-                        }
-
-                        if (instrument in Instrument.draggableInstruments) {
+                        if (instrument is Instrument.Pencil || instrument in Instrument.draggableInstruments) {
                             detectDragGestures(
                                 onDragStart = { offset: Offset ->
                                     val id = UUID.randomUUID()
@@ -277,7 +276,6 @@ fun LiveCanvas(
                     }
                 }
             }
-            Text(text = "Instrument: $instrument tappable: ${instrument in Instrument.tappableInstruments} drag: ${instrument in Instrument.draggableInstruments}")
         } else {
             Text(
                 modifier = Modifier.align(Alignment.Center),
