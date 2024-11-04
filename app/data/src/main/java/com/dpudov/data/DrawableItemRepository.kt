@@ -23,7 +23,14 @@ class DrawableItemRepository(
         val deferredStrokes = async {
             localStrokeDaoService.getByFrame(frameId)
         }
-        (deferredStrokes.await() + deferredCircles.await()).sortedBy(DrawableItem::finishTimestamp)
+        val deferredRects = async {
+            localRectangleDaoService.getByFrame(frameId)
+        }
+        val deferredTriangles = async {
+            localTriangleDaoService.getByFrame(frameId)
+        }
+        (deferredStrokes.await() + deferredCircles.await() + deferredRects.await() + deferredTriangles.await())
+            .sortedBy(DrawableItem::finishTimestamp)
     }
 
     override suspend fun addItem(item: DrawableItem) {
@@ -32,7 +39,14 @@ class DrawableItemRepository(
 
     override suspend fun addAll(items: List<DrawableItem>) {
         if (items.isNotEmpty()) {
-            chooseLocalDaoService(items.first()).addAll(items)
+            val strokes = items.filterIsInstance<Stroke>()
+            val circles = items.filterIsInstance<Circle>()
+            val triangles = items.filterIsInstance<Triangle>()
+            val rects = items.filterIsInstance<Rect>()
+            localStrokeDaoService.addAll(strokes)
+            localCircleDaoService.addAll(circles)
+            localRectangleDaoService.addAll(rects)
+            localTriangleDaoService.addAll(triangles)
         }
     }
 

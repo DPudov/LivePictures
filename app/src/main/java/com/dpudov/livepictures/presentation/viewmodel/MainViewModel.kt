@@ -137,8 +137,8 @@ class MainViewModel @Inject constructor(
         .combineAny(refreshTrigger) { frame, _ -> frame }
         .mapLatest { frame ->
             frame ?: return@mapLatest emptyList()
-            val strokes = drawableItemRepository.getItemsByFrameId(frame.id)
-            strokes
+            val items = drawableItemRepository.getItemsByFrameId(frame.id)
+            items
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -163,8 +163,19 @@ class MainViewModel @Inject constructor(
                         )
                     )
 
-                    is Rect -> TODO()
-                    is Triangle -> TODO()
+                    is Rect -> it.copy(
+                        color = makeSemiTransparentColor(
+                            argb = it.color,
+                            alphaFactor = 0.5f
+                        )
+                    )
+
+                    is Triangle -> it.copy(
+                        color = makeSemiTransparentColor(
+                            argb = it.color,
+                            alphaFactor = 0.5f
+                        )
+                    )
                 }
             }
             items

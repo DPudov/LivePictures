@@ -291,8 +291,8 @@ fun android.graphics.Canvas.drawItem(item: DrawableItem) {
     when (item) {
         is Circle -> drawCircle(item)
         is Stroke -> drawStroke(item)
-        is Rect -> TODO()
-        is Triangle -> TODO()
+        is Rect -> drawRectangle(item)
+        is Triangle -> drawTriangle(item)
     }
 }
 
@@ -340,6 +340,48 @@ fun android.graphics.Canvas.drawCircle(circle: Circle) {
         /* cx = */ circle.centerX,
         /* cy = */ circle.centerY,
         /* radius = */ circle.radius,
+        /* paint = */ paint
+    )
+}
+
+fun android.graphics.Canvas.drawRectangle(rect: Rect) {
+    val paint = android.graphics.Paint().apply {
+        isAntiAlias = true
+        this.color = rect.color
+        xfermode = null
+        strokeWidth = rect.thickness
+        style = android.graphics.Paint.Style.STROKE
+        strokeCap = android.graphics.Paint.Cap.ROUND
+        clearShadowLayer()
+    }
+
+    drawRect(
+        /* left = */ rect.topLeftX,
+        /* top = */ rect.topLeftY,
+        /* right = */ rect.topLeftX + rect.width,
+        /* bottom = */ rect.topLeftY + rect.height,
+        /* paint = */ paint
+    )
+}
+
+fun android.graphics.Canvas.drawTriangle(triangle: Triangle) {
+    val paint = android.graphics.Paint().apply {
+        isAntiAlias = true
+        this.color = triangle.color
+        xfermode = null
+        strokeWidth = triangle.thickness
+        style = android.graphics.Paint.Style.STROKE
+        strokeCap = android.graphics.Paint.Cap.ROUND
+        clearShadowLayer()
+    }
+    val path = android.graphics.Path().apply {
+        moveTo(triangle.x1, triangle.y1)
+        lineTo(triangle.x2, triangle.y2)
+        lineTo(triangle.x3, triangle.y3)
+        lineTo(triangle.x1, triangle.y1)
+    }
+    drawPath(
+        /* path = */ path,
         /* paint = */ paint
     )
 }
