@@ -150,13 +150,17 @@ fun MainScreen(
                 onFpsSelected = viewModel::selectFps,
                 defaultFps = animation?.fps ?: 1,
                 onShare = {
+                    isFramePreviewVisible = false
                     viewModel.shareAnimation(context)
                 },
                 currentValue = generationCount,
                 onValueChange = { newValue ->
                     generationCount = newValue
                 },
-                onGenerate = viewModel::generateFrames
+                onGenerate = {
+                    isFramePreviewVisible = false
+                    viewModel.generateFrames(it)
+                }
             )
 
             if (gifPreparationState == GifPreparationState.Idle && generationState == GenerationState.Idle) {

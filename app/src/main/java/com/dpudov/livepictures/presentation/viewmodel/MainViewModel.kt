@@ -382,20 +382,6 @@ class MainViewModel @Inject constructor(
                     pageSize = PAGE_SIZE
                 )
                 _framesCache.update { loadedFrames }
-            } else {
-                val frame = currentFrame.value ?: return@launch
-                val frameId = frame.id
-                val prevFrames = frameRepository.loadPreviousFrames(
-                    animationId = currentAnimationId,
-                    firstFrameId = frameId,
-                    pageSize = PAGE_SIZE
-                )
-                val nextFrames = frameRepository.loadNextFrames(
-                    animationId = currentAnimationId,
-                    lastFrameId = frameId,
-                    pageSize = PAGE_SIZE
-                )
-                _framesCache.update { prevFrames + frame + nextFrames }
             }
         }
     }
