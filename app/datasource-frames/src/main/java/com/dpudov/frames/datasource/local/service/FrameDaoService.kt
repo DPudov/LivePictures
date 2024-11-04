@@ -33,7 +33,6 @@ class FrameDaoService(
     ): List<Frame> =
         withContext(dispatcher) {
             frameDao.loadNextFrames(
-                animationId = animationId,
                 lastFrameId = lastFrameId,
                 pageSize = pageSize
             ).map(FrameEntity::toData)
@@ -46,7 +45,6 @@ class FrameDaoService(
         pageSize: Int
     ): List<Frame> = withContext(dispatcher) {
         frameDao.loadPreviousFrames(
-            animationId = animationId,
             firstFrameId = firstFrameId,
             pageSize = pageSize
         ).map(FrameEntity::toData)

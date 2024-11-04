@@ -13,16 +13,46 @@ interface FrameDao {
     @Query("select * from frames where id in (:ids)")
     fun loadAnyByIds(ids: List<UUID>): Flow<List<FrameEntity>>
 
-    @Query("select * from frames where animationId = :animationId and (prevFrameId = :lastFrameId or :lastFrameId is null) limit :pageSize")
+    @Query("""
+        WITH RECURSIVE NextFrames AS (
+            SELECT *
+            FROM frames
+            WHERE id = :lastFrameId
+
+            UNION ALL
+
+            SELECT fe.id, fe.animationId, fe.prevFrameId, fe.nextFrameId
+            FROM frames fe
+            INNER JOIN NextFrames nf ON fe.id = nf.nextFrameId
+            WHERE nf.nextFrameId IS NOT NULL
+            LIMIT :pageSize
+        )
+        SELECT *
+        FROM NextFrames
+        WHERE id != :lastFrameId
+    """)
     suspend fun loadNextFrames(
-        animationId: UUID,
         lastFrameId: UUID?,
         pageSize: Int
     ): List<FrameEntity>
 
-    @Query("select * from frames where animationId = :animationId and (nextFrameId = :firstFrameId or :firstFrameId is null) limit :pageSize")
+    @Query(" WITH RECURSIVE PreviousFrames AS (\n" +
+            "            SELECT *\n" +
+            "            FROM frames\n" +
+            "            WHERE id = :firstFrameId\n" +
+            "\n" +
+            "            UNION ALL\n" +
+            "\n" +
+            "            SELECT fe.id, fe.animationId, fe.prevFrameId, fe.nextFrameId\n" +
+            "            FROM frames fe\n" +
+            "            INNER JOIN PreviousFrames pf ON fe.id = pf.prevFrameId\n" +
+            "            WHERE pf.prevFrameId IS NOT NULL\n" +
+            "            LIMIT :pageSize\n" +
+            "        )\n" +
+            "        SELECT *\n" +
+            "        FROM PreviousFrames\n" +
+            "        WHERE id != :firstFrameId")
     suspend fun loadPreviousFrames(
-        animationId: UUID,
         firstFrameId: UUID?,
         pageSize: Int
     ): List<FrameEntity>

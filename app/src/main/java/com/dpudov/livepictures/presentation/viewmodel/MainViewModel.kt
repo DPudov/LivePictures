@@ -373,17 +373,27 @@ class MainViewModel @Inject constructor(
     fun updatePreviewCache() {
         viewModelScope.launch {
             val currentAnimationId = currentAnimation.value?.id ?: return@launch
-            val framesInCache = _framesCache.value
+            val currentFrame = currentFrame.value
 
-            Log.d(javaClass.simpleName, "Frames in cache: $framesInCache")
-            if (framesInCache.isEmpty()) {
-                val loadedFrames = frameRepository.loadNextFrames(
-                    animationId = currentAnimationId,
-                    lastFrameId = null,
-                    pageSize = PAGE_SIZE
-                )
-                _framesCache.update { loadedFrames }
+
+            val nextFrames = frameRepository.loadNextFrames(
+                animationId = currentAnimationId,
+                lastFrameId = currentFrame?.id,
+                pageSize = PAGE_SIZE
+            )
+            val prevFrames = frameRepository.loadPreviousFrames(
+                animationId = currentAnimationId,
+                firstFrameId = currentFrame?.id,
+                pageSize = PAGE_SIZE
+            )
+
+            val cache = if (currentFrame != null) {
+                prevFrames + currentFrame + nextFrames
+            } else {
+                prevFrames + nextFrames
             }
+
+            _framesCache.update { cache.distinctBy(Frame::id) }
         }
     }
 
@@ -399,7 +409,7 @@ class MainViewModel @Inject constructor(
                 pageSize = PAGE_SIZE
             )
             val newCache = framesInCache.takeLast(PAGE_SIZE) + loadedFrames
-            _framesCache.update { newCache }
+            _framesCache.update { newCache.distinctBy(Frame::id) }
         }
     }
 
@@ -415,7 +425,7 @@ class MainViewModel @Inject constructor(
                 pageSize = PAGE_SIZE
             )
             val newCache = loadedFrames + framesInCache.take(PAGE_SIZE)
-            _framesCache.update { newCache }
+            _framesCache.update { newCache.distinctBy(Frame::id) }
         }
     }
 
