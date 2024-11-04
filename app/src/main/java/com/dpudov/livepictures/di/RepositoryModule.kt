@@ -8,6 +8,7 @@ import com.dpudov.data.ICircleDaoService
 import com.dpudov.data.IFrameDaoService
 import com.dpudov.data.IInstrumentDaoService
 import com.dpudov.data.IStrokeDaoService
+import com.dpudov.data.ITriangleDaoService
 import com.dpudov.data.InstrumentRepository
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IDrawableItemRepository
@@ -45,9 +46,11 @@ class RepositoryModule {
     @Provides
     fun provideDrawableItemRepository(
         localStrokeDaoService: IStrokeDaoService,
-        localCircleDaoService: ICircleDaoService
+        localCircleDaoService: ICircleDaoService,
+        localTriangleDaoService: ITriangleDaoService
     ): IDrawableItemRepository = DrawableItemRepository(
         localStrokeDaoService = localStrokeDaoService,
-        localCircleDaoService = localCircleDaoService
+        localCircleDaoService = localCircleDaoService,
+        localTriangleDaoService = localTriangleDaoService
     )
 }
