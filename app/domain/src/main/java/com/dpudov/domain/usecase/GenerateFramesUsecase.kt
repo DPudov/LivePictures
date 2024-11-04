@@ -90,6 +90,7 @@ class GenerateFramesUsecase(
                         id = UUID.randomUUID(),
                         frameId = nextFrame.id,
                         finishTimestamp = System.currentTimeMillis(),
+                        color = random.nextInt(),
                         topLeftX = it.topLeftX + (random.nextFloat() * 400f) * random.nextInt(
                             -1,
                             2
