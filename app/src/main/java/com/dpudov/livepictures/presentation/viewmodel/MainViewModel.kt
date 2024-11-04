@@ -3,7 +3,6 @@ package com.dpudov.livepictures.presentation.viewmodel
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
@@ -36,13 +35,14 @@ import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.model.OnItemDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
-import com.dpudov.livepictures.presentation.ui.controls.drawItem
+import com.dpudov.livepictures.util.CanvasUtil
 import com.dpudov.livepictures.util.ColorUtil.makeSemiTransparentColor
 import com.dpudov.livepictures.util.combineAny
 import com.dpudov.livepictures.util.tickerFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -95,24 +95,13 @@ class MainViewModel @Inject constructor(
 
     private val backgroundBitmap =
         AppCompatResources.getDrawable(app.applicationContext, R.drawable.paper_texture)
-            ?.toBitmap(width = 1080, height = 1920)
+            ?.toBitmap(width = CanvasUtil.DEFAULT_WIDTH, height = CanvasUtil.DEFAULT_HEIGHT)
 
     val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
         .map { frameList ->
             frameList.map { frame ->
                 val items = drawableItemRepository.getItemsByFrameId(frame.id)
-                val result = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                val resultCanvas = Canvas(result)
-                if (backgroundBitmap != null) {
-                    resultCanvas.drawBitmap(backgroundBitmap, 0f, 0f, null)
-                }
-                val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
-
-                items.forEach {
-                    canvas.drawItem(it)
-                }
-                resultCanvas.drawBitmap(bitmap, 0f, 0f, null)
+                val result = CanvasUtil.createFullDrawingBitmap(backgroundBitmap, items)
                 FramePreviewData(
                     frame = frame,
                     bitmap = result
@@ -122,13 +111,11 @@ class MainViewModel @Inject constructor(
         .flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val prevFrame: StateFlow<Frame?> = currentFrame
+    private val prevFrame: Flow<Frame?> = currentFrame
         .map { frame ->
             val prevId = frame?.prevId ?: return@map null
             frameRepository.loadById(prevId)
         }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
 
     private val redoStack: MutableStateFlow<List<DrawableItem>> = MutableStateFlow(emptyList())
 
@@ -137,8 +124,8 @@ class MainViewModel @Inject constructor(
         .combineAny(refreshTrigger) { frame, _ -> frame }
         .mapLatest { frame ->
             frame ?: return@mapLatest emptyList()
-            val strokes = drawableItemRepository.getItemsByFrameId(frame.id)
-            strokes
+            val items = drawableItemRepository.getItemsByFrameId(frame.id)
+            items
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -163,8 +150,19 @@ class MainViewModel @Inject constructor(
                         )
                     )
 
-                    is Rect -> TODO()
-                    is Triangle -> TODO()
+                    is Rect -> it.copy(
+                        color = makeSemiTransparentColor(
+                            argb = it.color,
+                            alphaFactor = 0.5f
+                        )
+                    )
+
+                    is Triangle -> it.copy(
+                        color = makeSemiTransparentColor(
+                            argb = it.color,
+                            alphaFactor = 0.5f
+                        )
+                    )
                 }
             }
             items
@@ -573,30 +571,20 @@ class MainViewModel @Inject constructor(
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
                     gifRepository.start(currentAnimation.fps, outputFile)
-                    var lastFrameId: UUID? = null
-                    do {
-                        val frames =
-                            frameRepository.loadNextFrames(currentAnimation.id, lastFrameId, 1)
-                        Log.d(javaClass.simpleName, "Processing frames: $frames")
-                        lastFrameId = frames.lastOrNull()?.id
-                        val bitmaps = frames.map { frame ->
-                            val items = drawableItemRepository.getItemsByFrameId(frame.id)
-                            val result = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                            val resultCanvas = Canvas(result)
-                            if (backgroundBitmap != null) {
-                                resultCanvas.drawBitmap(backgroundBitmap, 0f, 0f, null)
-                            }
-                            val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                            val canvas = Canvas(bitmap)
-
-                            items.forEach {
-                                canvas.drawItem(it)
-                            }
-                            resultCanvas.drawBitmap(bitmap, 0f, 0f, null)
-                            Bitmap.createScaledBitmap(result, 240, 426, true)
+                    val firstFrame = frameRepository.loadFirstFrame(currentAnimation.id)
+                    var currentFrame = firstFrame
+                    while (currentFrame != null) {
+                        val items = drawableItemRepository.getItemsByFrameId(currentFrame.id)
+                        val fullBitmap = CanvasUtil.createFullDrawingBitmap(backgroundBitmap, items)
+                        val scaledForGif = CanvasUtil.createBitmapForGif(fullBitmap)
+                        gifRepository.addImages(listOf(scaledForGif), outputFile)
+                        val nextId = currentFrame.nextId
+                        currentFrame = if (nextId != null) {
+                            frameRepository.loadById(nextId)
+                        } else {
+                            null
                         }
-                        gifRepository.addImages(bitmaps, outputFile)
-                    } while (frames.isNotEmpty())
+                    }
                     gifRepository.finish(outputFile)
                 }
 
