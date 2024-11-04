@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -11,7 +12,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
 import com.dpudov.domain.model.Circle
@@ -65,13 +66,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    private val app: Application,
     private val animationRepository: IAnimationRepository,
     private val frameRepository: IFrameRepository,
     private val gifRepository: IGifExportRepository,
     private val drawableItemRepository: IDrawableItemRepository,
     private val generateFramesUsecase: GenerateFramesUsecase
 //    private val instrumentRepository: IInstrumentRepository
-) : ViewModel() {
+) : AndroidViewModel(app) {
     //    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
 //        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
@@ -82,32 +84,44 @@ class MainViewModel @Inject constructor(
     val currentAnimation: StateFlow<Animation?> = animationRepository.getLatestAnimation()
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
-    val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
-        .map { frameList ->
-            frameList.map { frame ->
-                val items = drawableItemRepository.getItemsByFrameId(frame.id)
-                val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
-
-                items.forEach {
-                    canvas.drawItem(it)
-                }
-                FramePreviewData(
-                    frame = frame,
-                    bitmap = bitmap
-                )
-            }
-        }
-        .flowOn(Dispatchers.Default)
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
     private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
     val currentFrame: StateFlow<Frame?> =
         combineAny(_currentFrame, animationState, refreshTrigger) { frame, animationState, _ ->
             frame
         }
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
+
+    private val backgroundBitmap =
+        AppCompatResources.getDrawable(app.applicationContext, R.drawable.paper_texture)
+            ?.toBitmap(width = 1080, height = 1920)
+
+    val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
+        .map { frameList ->
+            frameList.map { frame ->
+                val items = drawableItemRepository.getItemsByFrameId(frame.id)
+                val result = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                val resultCanvas = Canvas(result)
+                if (backgroundBitmap != null) {
+                    resultCanvas.drawBitmap(backgroundBitmap, 0f, 0f, null)
+                }
+                val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+
+                items.forEach {
+                    canvas.drawItem(it)
+                }
+                resultCanvas.drawBitmap(bitmap, 0f, 0f, null)
+                FramePreviewData(
+                    frame = frame,
+                    bitmap = result
+                )
+            }
+        }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     val prevFrame: StateFlow<Frame?> = currentFrame
         .map { frame ->
             val prevId = frame?.prevId ?: return@map null
@@ -348,55 +362,42 @@ class MainViewModel @Inject constructor(
     private fun addDrawableItem(item: DrawableItem) {
         viewModelScope.launch {
             drawableItemRepository.addItem(item)
+            redoStack.update { emptyList() }
             refreshTrigger.emit(Unit)
         }
     }
 
     fun updatePreviewCache() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id ?: return@launch
-            val framesInCache = _framesCache.value
+            val currentFrame = currentFrame.value ?: return@launch
 
-            Log.d(javaClass.simpleName, "Frames in cache: $framesInCache")
-            if (framesInCache.isEmpty()) {
-                val loadedFrames = frameRepository.loadNextFrames(
-                    animationId = currentAnimationId,
-                    lastFrameId = null,
-                    pageSize = PAGE_SIZE
-                )
-                _framesCache.update { loadedFrames }
-            }
+            val nextFrames = getNextFrames(currentFrame, PAGE_SIZE)
+            val prevFrames = getPrevFrames(currentFrame, PAGE_SIZE)
+
+            val cache = prevFrames + currentFrame + nextFrames
+
+            _framesCache.update { cache }
         }
     }
 
     fun loadNextFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id ?: return@launch
             val framesInCache = _framesCache.value
+            val lastFrame = framesInCache.lastOrNull() ?: return@launch
+            val nextFrames = getNextFrames(lastFrame, PAGE_SIZE)
 
-            val lastFrameId = framesInCache.lastOrNull()?.id
-            val loadedFrames = frameRepository.loadNextFrames(
-                animationId = currentAnimationId,
-                lastFrameId = lastFrameId,
-                pageSize = PAGE_SIZE
-            )
-            val newCache = framesInCache.takeLast(PAGE_SIZE) + loadedFrames
+            val newCache = framesInCache.takeLast(PAGE_SIZE) + nextFrames
             _framesCache.update { newCache }
         }
     }
 
     fun loadPreviousFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id ?: return@launch
             val framesInCache = _framesCache.value
 
-            val firstFrameId = framesInCache.firstOrNull()?.id
-            val loadedFrames = frameRepository.loadPreviousFrames(
-                animationId = currentAnimationId,
-                firstFrameId = firstFrameId,
-                pageSize = PAGE_SIZE
-            )
-            val newCache = loadedFrames + framesInCache.take(PAGE_SIZE)
+            val firstFrameId = framesInCache.firstOrNull() ?: return@launch
+            val prevFrames = getPrevFrames(firstFrameId, PAGE_SIZE)
+            val newCache = prevFrames + framesInCache.take(PAGE_SIZE)
             _framesCache.update { newCache }
         }
     }
@@ -501,7 +502,6 @@ class MainViewModel @Inject constructor(
             if (currentStack.isNotEmpty()) {
                 val redoItem = currentStack.last()
                 redoStack.update { it.dropLast(1) }
-                // TODO: Если добавился новый элемент сбросить стек redo
                 drawableItemRepository.addItem(redoItem)
                 refreshTrigger.emit(Unit)
             }
@@ -572,9 +572,6 @@ class MainViewModel @Inject constructor(
                 if (!gifDir.exists()) gifDir.mkdirs()
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
-                    val backgroundBitmap =
-                        AppCompatResources.getDrawable(context, R.drawable.paper_texture)
-                            ?.toBitmap(width = 1080, height = 1920)
                     gifRepository.start(currentAnimation.fps, outputFile)
                     var lastFrameId: UUID? = null
                     do {
@@ -661,6 +658,47 @@ class MainViewModel @Inject constructor(
                     _generationState.update { GenerationState.Idle }
                 }
         }
+    }
+
+    private suspend fun getPrevFrames(startingFrame: Frame, count: Int): List<Frame> {
+        val previousFrames = mutableListOf<Frame>()
+        var currentFrame: Frame? = startingFrame
+        repeat(count) {
+            val curPrevId = currentFrame?.prevId
+            val prevFrame = if (curPrevId != null) {
+                frameRepository.loadPrev(curPrevId)
+            } else {
+                null
+            }
+            if (prevFrame != null) {
+                previousFrames.add(prevFrame)
+                currentFrame = prevFrame
+            } else {
+                return previousFrames.reversed()
+            }
+
+        }
+        return previousFrames.reversed()
+    }
+
+    private suspend fun getNextFrames(startingFrame: Frame, count: Int): List<Frame> {
+        val nextFrames = mutableListOf<Frame>()
+        var currentFrame: Frame? = startingFrame
+        repeat(count) {
+            val curNextId = currentFrame?.nextId
+            val nextFrame = if (curNextId != null) {
+                frameRepository.loadNext(curNextId)
+            } else {
+                null
+            }
+            if (nextFrame != null) {
+                nextFrames.add(nextFrame)
+                currentFrame = nextFrame
+            } else {
+                return nextFrames
+            }
+        }
+        return nextFrames
     }
 
     private fun Canvas.drawStroke(stroke: Stroke) {

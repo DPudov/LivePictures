@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.GenerationState
 import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.ui.controls.AdditionalBar
@@ -94,18 +96,47 @@ fun MainScreen(
                         shape = RoundedCornerShape(16.dp)
                     )
                     .fillMaxWidth(),
-                onAddFrame = viewModel::addFrame,
-                onDeleteFrame = viewModel::deleteFrame,
-                onDeleteAll = viewModel::deleteAll,
-                onCopyFrame = viewModel::copyFrame,
+                onAddFrame = {
+                    isFramePreviewVisible = false
+                    viewModel.addFrame()
+                },
+                onDeleteFrame = {
+                    isFramePreviewVisible = false
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.hold_longer_to_delete_all_frames),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.deleteFrame()
+                },
+                onDeleteAll = {
+                    isFramePreviewVisible = false
+                    viewModel.deleteAll()
+                },
+                onCopyFrame = {
+                    isFramePreviewVisible = false
+                    viewModel.copyFrame()
+                },
                 onShowFrames = {
-                    isFramePreviewVisible = true
+                    isFramePreviewVisible = !isFramePreviewVisible
                     viewModel.updatePreviewCache()
                 },
-                onUndo = viewModel::undo,
-                onRedo = viewModel::redo,
-                onStart = viewModel::startAnimation,
-                onPause = viewModel::pauseAnimation
+                onUndo = {
+                    isFramePreviewVisible = false
+                    viewModel.undo()
+                },
+                onRedo = {
+                    isFramePreviewVisible = false
+                    viewModel.redo()
+                },
+                onStart = {
+                    isFramePreviewVisible = false
+                    viewModel.startAnimation()
+                },
+                onPause = {
+                    isFramePreviewVisible = false
+                    viewModel.pauseAnimation()
+                }
             )
 
             AdditionalBar(
@@ -126,13 +157,17 @@ fun MainScreen(
                 onFpsSelected = viewModel::selectFps,
                 defaultFps = animation?.fps ?: 1,
                 onShare = {
+                    isFramePreviewVisible = false
                     viewModel.shareAnimation(context)
                 },
                 currentValue = generationCount,
                 onValueChange = { newValue ->
                     generationCount = newValue
                 },
-                onGenerate = viewModel::generateFrames
+                onGenerate = {
+                    isFramePreviewVisible = false
+                    viewModel.generateFrames(it)
+                }
             )
 
             if (gifPreparationState == GifPreparationState.Idle && generationState == GenerationState.Idle) {
@@ -147,10 +182,7 @@ fun MainScreen(
                     onItemDrawn = viewModel.onItemDrawn,
                     onToolChanged = viewModel.onToolChanged,
                     modifier = Modifier
-                        .padding(
-                            horizontal = 16.dp,
-                            vertical = 80.dp
-                        )
+                        .padding(16.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .border(
                             width = 1.dp,

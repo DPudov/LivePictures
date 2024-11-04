@@ -5,23 +5,67 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dpudov.frames.datasource.local.entity.FrameEntity
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 @Dao
 interface FrameDao {
-    @Query("select * from frames where animationId = :animationId and (prevFrameId = :lastFrameId or :lastFrameId is null) limit :pageSize")
+    @Query("select * from frames where id in (:ids)")
+    fun loadAnyByIds(ids: List<UUID>): Flow<List<FrameEntity>>
+
+    @Query(
+        """
+        WITH RECURSIVE NextFrames AS (
+            SELECT *
+            FROM frames
+            WHERE id = :lastFrameId
+
+            UNION ALL
+
+            SELECT fe.id, fe.animationId, fe.prevFrameId, fe.nextFrameId
+            FROM frames fe
+            INNER JOIN NextFrames nf ON fe.id = nf.nextFrameId
+            WHERE nf.nextFrameId IS NOT NULL
+            LIMIT :pageSize
+        )
+        SELECT *
+        FROM NextFrames
+        WHERE id != :lastFrameId
+    """
+    )
     suspend fun loadNextFrames(
-        animationId: UUID,
         lastFrameId: UUID?,
         pageSize: Int
     ): List<FrameEntity>
 
-    @Query("select * from frames where animationId = :animationId and (nextFrameId = :firstFrameId or :firstFrameId is null) limit :pageSize")
+    @Query(
+        """ WITH RECURSIVE PreviousFrames AS (
+            SELECT *
+            FROM frames
+            WHERE id = :firstFrameId
+
+            UNION ALL
+
+            SELECT fe.id, fe.animationId, fe.prevFrameId, fe.nextFrameId
+            FROM frames fe
+            INNER JOIN PreviousFrames pf ON fe.id = pf.prevFrameId
+            WHERE pf.prevFrameId IS NOT NULL
+            LIMIT :pageSize
+        )
+        SELECT *
+        FROM PreviousFrames
+        WHERE id != :firstFrameId"""
+    )
     suspend fun loadPreviousFrames(
-        animationId: UUID,
         firstFrameId: UUID?,
         pageSize: Int
     ): List<FrameEntity>
+
+    @Query("select * from frames where id = :prevId limit 1")
+    suspend fun loadPrevFrame(prevId: UUID): FrameEntity?
+
+    @Query("select * from frames where id = :nextId limit 1")
+    suspend fun loadNextFrame(nextId: UUID): FrameEntity?
 
     @Query("select * from frames where animationId = :animationId and nextFrameId is null")
     suspend fun loadLastFrame(animationId: UUID): FrameEntity?
