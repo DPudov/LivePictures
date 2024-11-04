@@ -58,6 +58,14 @@ class FrameDaoService(
         frameDao.loadFirstFrame(animationId)?.toData()
     }
 
+    override suspend fun loadNext(nextId: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadNextFrame(nextId)?.toData()
+    }
+
+    override suspend fun loadPrev(prevId: UUID): Frame? = withContext(dispatcher) {
+        frameDao.loadPrevFrame(prevId)?.toData()
+    }
+
     override suspend fun loadById(id: UUID): Frame? = withContext(dispatcher) {
         frameDao.loadById(id)?.toData()
     }

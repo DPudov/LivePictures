@@ -84,17 +84,20 @@ class MainViewModel @Inject constructor(
     val currentAnimation: StateFlow<Animation?> = animationRepository.getLatestAnimation()
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
+    val currentFrame: StateFlow<Frame?> =
+        combineAny(_currentFrame, animationState, refreshTrigger) { frame, animationState, _ ->
+            frame
+        }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
+
     private val backgroundBitmap =
         AppCompatResources.getDrawable(app.applicationContext, R.drawable.paper_texture)
             ?.toBitmap(width = 1080, height = 1920)
 
-    //    @OptIn(ExperimentalCoroutinesApi::class)
     val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
-//        .flatMapLatest { frames ->
-//            val ids = frames.map(Frame::id)
-//            frameRepository.loadAnyByIds(ids)
-//        }
         .map { frameList ->
             frameList.map { frame ->
                 val items = drawableItemRepository.getItemsByFrameId(frame.id)
@@ -119,12 +122,6 @@ class MainViewModel @Inject constructor(
         .flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    private val _currentFrame: MutableStateFlow<Frame?> = MutableStateFlow(null)
-    val currentFrame: StateFlow<Frame?> =
-        combineAny(_currentFrame, animationState, refreshTrigger) { frame, animationState, _ ->
-            frame
-        }
-            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val prevFrame: StateFlow<Frame?> = currentFrame
         .map { frame ->
             val prevId = frame?.prevId ?: return@map null
@@ -372,60 +369,36 @@ class MainViewModel @Inject constructor(
 
     fun updatePreviewCache() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id ?: return@launch
-            val currentFrame = currentFrame.value
+            val currentFrame = currentFrame.value ?: return@launch
 
+            val nextFrames = getNextFrames(currentFrame, PAGE_SIZE)
+            val prevFrames = getPrevFrames(currentFrame, PAGE_SIZE)
 
-            val nextFrames = frameRepository.loadNextFrames(
-                animationId = currentAnimationId,
-                lastFrameId = currentFrame?.id,
-                pageSize = PAGE_SIZE
-            )
-            val prevFrames = frameRepository.loadPreviousFrames(
-                animationId = currentAnimationId,
-                firstFrameId = currentFrame?.id,
-                pageSize = PAGE_SIZE
-            )
+            val cache = prevFrames + currentFrame + nextFrames
 
-            val cache = if (currentFrame != null) {
-                prevFrames + currentFrame + nextFrames
-            } else {
-                prevFrames + nextFrames
-            }
-
-            _framesCache.update { cache.distinctBy(Frame::id) }
+            _framesCache.update { cache }
         }
     }
 
     fun loadNextFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id ?: return@launch
             val framesInCache = _framesCache.value
+            val lastFrame = framesInCache.lastOrNull() ?: return@launch
+            val nextFrames = getNextFrames(lastFrame, PAGE_SIZE)
 
-            val lastFrameId = framesInCache.lastOrNull()?.id
-            val loadedFrames = frameRepository.loadNextFrames(
-                animationId = currentAnimationId,
-                lastFrameId = lastFrameId,
-                pageSize = PAGE_SIZE
-            )
-            val newCache = framesInCache.takeLast(PAGE_SIZE) + loadedFrames
-            _framesCache.update { newCache.distinctBy(Frame::id) }
+            val newCache = framesInCache.takeLast(PAGE_SIZE) + nextFrames
+            _framesCache.update { newCache }
         }
     }
 
     fun loadPreviousFrames() {
         viewModelScope.launch {
-            val currentAnimationId = currentAnimation.value?.id ?: return@launch
             val framesInCache = _framesCache.value
 
-            val firstFrameId = framesInCache.firstOrNull()?.id
-            val loadedFrames = frameRepository.loadPreviousFrames(
-                animationId = currentAnimationId,
-                firstFrameId = firstFrameId,
-                pageSize = PAGE_SIZE
-            )
-            val newCache = loadedFrames + framesInCache.take(PAGE_SIZE)
-            _framesCache.update { newCache.distinctBy(Frame::id) }
+            val firstFrameId = framesInCache.firstOrNull() ?: return@launch
+            val prevFrames = getPrevFrames(firstFrameId, PAGE_SIZE)
+            val newCache = prevFrames + framesInCache.take(PAGE_SIZE)
+            _framesCache.update { newCache }
         }
     }
 
@@ -685,6 +658,47 @@ class MainViewModel @Inject constructor(
                     _generationState.update { GenerationState.Idle }
                 }
         }
+    }
+
+    private suspend fun getPrevFrames(startingFrame: Frame, count: Int): List<Frame> {
+        val previousFrames = mutableListOf<Frame>()
+        var currentFrame: Frame? = startingFrame
+        repeat(count) {
+            val curPrevId = currentFrame?.prevId
+            val prevFrame = if (curPrevId != null) {
+                frameRepository.loadPrev(curPrevId)
+            } else {
+                null
+            }
+            if (prevFrame != null) {
+                previousFrames.add(prevFrame)
+                currentFrame = prevFrame
+            } else {
+                return previousFrames.reversed()
+            }
+
+        }
+        return previousFrames.reversed()
+    }
+
+    private suspend fun getNextFrames(startingFrame: Frame, count: Int): List<Frame> {
+        val nextFrames = mutableListOf<Frame>()
+        var currentFrame: Frame? = startingFrame
+        repeat(count) {
+            val curNextId = currentFrame?.nextId
+            val nextFrame = if (curNextId != null) {
+                frameRepository.loadNext(curNextId)
+            } else {
+                null
+            }
+            if (nextFrame != null) {
+                nextFrames.add(nextFrame)
+                currentFrame = nextFrame
+            } else {
+                return nextFrames
+            }
+        }
+        return nextFrames
     }
 
     private fun Canvas.drawStroke(stroke: Stroke) {

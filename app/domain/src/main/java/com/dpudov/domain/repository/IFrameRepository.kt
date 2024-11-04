@@ -19,6 +19,10 @@ interface IFrameRepository {
 
     suspend fun loadFirstFrame(animationId: UUID): Frame?
 
+    suspend fun loadNext(nextId: UUID): Frame?
+
+    suspend fun loadPrev(prevId: UUID): Frame?
+
     suspend fun loadById(id: UUID): Frame?
 
     suspend fun loadById(animationId: UUID, id: UUID): Frame?
