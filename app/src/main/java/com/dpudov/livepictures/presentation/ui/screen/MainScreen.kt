@@ -99,7 +99,7 @@ fun MainScreen(
                 onDeleteAll = viewModel::deleteAll,
                 onCopyFrame = viewModel::copyFrame,
                 onShowFrames = {
-                    isFramePreviewVisible = true
+                    isFramePreviewVisible = !isFramePreviewVisible
                     viewModel.updatePreviewCache()
                 },
                 onUndo = viewModel::undo,
