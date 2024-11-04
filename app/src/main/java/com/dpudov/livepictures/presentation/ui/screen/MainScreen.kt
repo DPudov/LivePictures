@@ -42,8 +42,8 @@ fun MainScreen(
     val currentFrame by viewModel.currentFrame.collectAsState()
     val currentInstrument by viewModel.selectedInstrument.collectAsState()
     val currentColor by viewModel.selectedColor.collectAsState()
-    val previousStrokes by viewModel.previousStrokes.collectAsState()
-    val currentStrokes by viewModel.currentStrokes.collectAsState()
+    val previousItems by viewModel.previousItems.collectAsState()
+    val currentItems by viewModel.currentItems.collectAsState()
     val undoState by viewModel.undoState.collectAsState()
     val redoState by viewModel.redoState.collectAsState()
     val addState by viewModel.addState.collectAsState()
@@ -61,6 +61,7 @@ fun MainScreen(
     var isColorPickerVisible by remember { mutableStateOf(false) }
     var isSizePickerVisible by remember { mutableStateOf(false) }
     var isFramePreviewVisible by remember { mutableStateOf(false) }
+    var isFigurePadVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
     Box(
         modifier = modifier
@@ -132,9 +133,9 @@ fun MainScreen(
                     instrument = currentInstrument,
                     size = strokeSize,
                     color = Color(currentColor).toArgb(),
-                    previousStrokes = previousStrokes,
-                    strokes = currentStrokes,
-                    onStrokeDrawn = viewModel.onStrokeDrawn,
+                    previousItems = previousItems,
+                    items = currentItems,
+                    onItemDrawn = viewModel.onItemDrawn,
                     onToolChanged = viewModel.onToolChanged,
                     modifier = Modifier
                         .padding(
@@ -167,6 +168,7 @@ fun MainScreen(
                 isColorPadVisible = isColorPadVisible,
                 isPickerVisible = isColorPickerVisible,
                 isSizePickerVisible = isSizePickerVisible,
+                isFiguresPadVisible = isFigurePadVisible,
                 onColorPickerToggle = {
                     isColorPickerVisible = !isColorPickerVisible
                 },
@@ -183,6 +185,9 @@ fun MainScreen(
                 onSizeSelectionChanged = viewModel::selectSize,
                 onPaletteClick = {
                     isColorPickerVisible = !isColorPickerVisible
+                },
+                onInstrumentsClick = {
+                    isFigurePadVisible = !isFigurePadVisible
                 },
                 modifier = Modifier
                     .padding(16.dp)

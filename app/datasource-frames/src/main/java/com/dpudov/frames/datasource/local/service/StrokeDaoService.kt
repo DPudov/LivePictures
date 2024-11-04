@@ -1,6 +1,7 @@
 package com.dpudov.frames.datasource.local.service
 
 import com.dpudov.data.IStrokeDaoService
+import com.dpudov.domain.model.DrawableItem
 import com.dpudov.domain.model.Point
 import com.dpudov.domain.model.Stroke
 import com.dpudov.frames.datasource.local.dao.PointDao
@@ -20,7 +21,7 @@ class StrokeDaoService(
 ) : IStrokeDaoService {
     private val strokeDao: StrokeDao = appDatabase.strokeDao()
     private val pointDao: PointDao = appDatabase.pointDao()
-    override suspend fun getStrokesByFrame(frameId: UUID) =
+    override suspend fun getByFrame(frameId: UUID) =
         withContext(dispatcher) {
             strokeDao.getFullByFrameId(frameId)
                 .map(StrokeWithPoints::toData)
@@ -28,23 +29,28 @@ class StrokeDaoService(
         }
 
 
-    override suspend fun addStroke(stroke: Stroke) {
+    override suspend fun add(item: DrawableItem) {
         withContext(dispatcher) {
-            strokeDao.addStroke(stroke.toEntity())
-            pointDao.insertAll(stroke.points.map(Point::toEntity))
+            if (item is Stroke) {
+                strokeDao.addStroke(item.toEntity())
+                pointDao.insertAll(item.points.map(Point::toEntity))
+            }
         }
     }
 
-    override suspend fun addAll(strokes: List<Stroke>) {
+    override suspend fun addAll(items: List<DrawableItem>) {
         withContext(dispatcher) {
+            val strokes = items.filterIsInstance<Stroke>()
             strokeDao.addAll(strokes.map(Stroke::toEntity))
             pointDao.insertAll(strokes.flatMap(Stroke::points).map(Point::toEntity))
         }
     }
 
-    override suspend fun removeStroke(strokeId: UUID) {
+    override suspend fun remove(item: DrawableItem) {
         withContext(dispatcher) {
-            strokeDao.removeStroke(strokeId)
+            if (item is Stroke) {
+                strokeDao.removeStroke(item.id)
+            }
         }
     }
 

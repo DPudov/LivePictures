@@ -28,4 +28,7 @@
     <string name="show_frames">Show frames</string>
     <string name="choose_stroke_size">Choose stroke size</string>
     <string name="size">Size</string>
+    <string name="add_rectangle">Add rectangle</string>
+    <string name="add_triangle">Add triangle</string>
+    <string name="add_circle">Add circle</string>
 </resources>

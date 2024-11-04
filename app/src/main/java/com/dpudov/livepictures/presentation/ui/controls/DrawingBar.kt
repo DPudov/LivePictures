@@ -35,6 +35,7 @@ fun DrawingBar(
     isColorPadVisible: Boolean = false,
     isPickerVisible: Boolean = false,
     isSizePickerVisible: Boolean = false,
+    isFiguresPadVisible: Boolean = false,
     selectedColor: Color = Color.White,
     currentSize: Float = Instrument.PENCIL_SIZE,
     selectedInstrument: Instrument = Instrument.Pencil,
@@ -45,6 +46,7 @@ fun DrawingBar(
     onColorSelectionChanged: (Color) -> Unit = {},
     onSizeSelectionChanged: (Float) -> Unit = {},
     onPaletteClick: () -> Unit = {},
+    onInstrumentsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -75,6 +77,11 @@ fun DrawingBar(
             onPaletteClick = onPaletteClick,
             onColorSelected = onColorSelectionChanged
         )
+        FiguresBar(
+            isVisible = isFiguresPadVisible,
+            currentInstrument = selectedInstrument,
+            onFigureSelected = onSelection
+        )
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -97,7 +104,10 @@ fun DrawingBar(
                     onSelection(Instrument.Eraser)
                 }
             )
-            InstrumentsButton()
+            InstrumentsButton(
+                buttonState = ButtonState.Active,
+                onClick = onInstrumentsClick
+            )
             ColorButton(
                 containerColor = selectedColor,
                 onClick = onColorPadToggle
