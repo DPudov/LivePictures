@@ -2,6 +2,7 @@ package com.dpudov.data
 
 import com.dpudov.domain.model.Circle
 import com.dpudov.domain.model.DrawableItem
+import com.dpudov.domain.model.Rect
 import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.model.Triangle
 import com.dpudov.domain.repository.IDrawableItemRepository
@@ -12,7 +13,8 @@ import java.util.UUID
 class DrawableItemRepository(
     private val localStrokeDaoService: IStrokeDaoService,
     private val localCircleDaoService: ICircleDaoService,
-    private val localTriangleDaoService: ITriangleDaoService
+    private val localTriangleDaoService: ITriangleDaoService,
+    private val localRectangleDaoService: IRectangleDaoService
 ) : IDrawableItemRepository {
     override suspend fun getItemsByFrameId(frameId: UUID): List<DrawableItem> = coroutineScope {
         val deferredCircles = async {
@@ -43,5 +45,6 @@ class DrawableItemRepository(
             is Circle -> localCircleDaoService
             is Stroke -> localStrokeDaoService
             is Triangle -> localTriangleDaoService
+            is Rect -> localRectangleDaoService
         }
 }

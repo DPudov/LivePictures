@@ -34,7 +34,9 @@ import com.dpudov.domain.model.DrawableItem
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.model.Instrument
 import com.dpudov.domain.model.Point
+import com.dpudov.domain.model.Rect
 import com.dpudov.domain.model.Stroke
+import com.dpudov.domain.model.Triangle
 import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.OnItemDrawn
@@ -289,6 +291,8 @@ fun android.graphics.Canvas.drawItem(item: DrawableItem) {
     when (item) {
         is Circle -> drawCircle(item)
         is Stroke -> drawStroke(item)
+        is Rect -> TODO()
+        is Triangle -> TODO()
     }
 }
 

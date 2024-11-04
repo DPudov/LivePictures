@@ -18,7 +18,9 @@ import com.dpudov.domain.model.Circle
 import com.dpudov.domain.model.DrawableItem
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.model.Instrument
+import com.dpudov.domain.model.Rect
 import com.dpudov.domain.model.Stroke
+import com.dpudov.domain.model.Triangle
 import com.dpudov.domain.repository.IAnimationRepository
 import com.dpudov.domain.repository.IDrawableItemRepository
 import com.dpudov.domain.repository.IFrameRepository
@@ -143,6 +145,9 @@ class MainViewModel @Inject constructor(
                             alphaFactor = 0.5f
                         )
                     )
+
+                    is Rect -> TODO()
+                    is Triangle -> TODO()
                 }
             }
             items

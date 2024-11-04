@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "1f588e98c8830e4f534abcf689cf7994",
+    "identityHash": "419366df1575afa2fe64d35383554645",
     "entities": [
       {
         "tableName": "animations",
@@ -259,6 +259,198 @@
         ]
       },
       {
+        "tableName": "triangles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `frameId` BLOB NOT NULL, `finishTimestamp` INTEGER NOT NULL, `color` INTEGER NOT NULL, `thickness` REAL NOT NULL, `x1` REAL NOT NULL, `y1` REAL NOT NULL, `x2` REAL NOT NULL, `y2` REAL NOT NULL, `x3` REAL NOT NULL, `y3` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`frameId`) REFERENCES `frames`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frameId",
+            "columnName": "frameId",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finishTimestamp",
+            "columnName": "finishTimestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "thickness",
+            "columnName": "thickness",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "x1",
+            "columnName": "x1",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "y1",
+            "columnName": "y1",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "x2",
+            "columnName": "x2",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "y2",
+            "columnName": "y2",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "x3",
+            "columnName": "x3",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "y3",
+            "columnName": "y3",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_triangles_frameId",
+            "unique": false,
+            "columnNames": [
+              "frameId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_triangles_frameId` ON `${TABLE_NAME}` (`frameId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "frames",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "frameId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "rectangles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `frameId` BLOB NOT NULL, `finishTimestamp` INTEGER NOT NULL, `color` INTEGER NOT NULL, `thickness` REAL NOT NULL, `topLeftX` REAL NOT NULL, `topLeftY` REAL NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`frameId`) REFERENCES `frames`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frameId",
+            "columnName": "frameId",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finishTimestamp",
+            "columnName": "finishTimestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "thickness",
+            "columnName": "thickness",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "topLeftX",
+            "columnName": "topLeftX",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "topLeftY",
+            "columnName": "topLeftY",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "width",
+            "columnName": "width",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "height",
+            "columnName": "height",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_rectangles_frameId",
+            "unique": false,
+            "columnNames": [
+              "frameId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rectangles_frameId` ON `${TABLE_NAME}` (`frameId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "frames",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "frameId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
         "tableName": "instruments",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
@@ -348,7 +540,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1f588e98c8830e4f534abcf689cf7994')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '419366df1575afa2fe64d35383554645')"
     ]
   }
 }
