@@ -9,6 +9,9 @@ import com.dpudov.frames.datasource.local.mapper.toData
 import com.dpudov.frames.datasource.local.mapper.toEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
@@ -17,6 +20,11 @@ class FrameDaoService(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : IFrameDaoService {
     private val frameDao: FrameDao = appDatabase.frameDao()
+    override fun loadAnyByIds(ids: List<UUID>): Flow<List<Frame>> = frameDao.loadAnyByIds(ids)
+        .map {
+            it.map(FrameEntity::toData)
+        }
+        .flowOn(dispatcher)
 
     override suspend fun loadNextFrames(
         animationId: UUID,

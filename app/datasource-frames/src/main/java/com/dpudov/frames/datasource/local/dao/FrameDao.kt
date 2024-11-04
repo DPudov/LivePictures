@@ -5,10 +5,14 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dpudov.frames.datasource.local.entity.FrameEntity
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 @Dao
 interface FrameDao {
+    @Query("select * from frames where id in (:ids)")
+    fun loadAnyByIds(ids: List<UUID>): Flow<List<FrameEntity>>
+
     @Query("select * from frames where animationId = :animationId and (prevFrameId = :lastFrameId or :lastFrameId is null) limit :pageSize")
     suspend fun loadNextFrames(
         animationId: UUID,

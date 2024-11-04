@@ -94,18 +94,42 @@ fun MainScreen(
                         shape = RoundedCornerShape(16.dp)
                     )
                     .fillMaxWidth(),
-                onAddFrame = viewModel::addFrame,
-                onDeleteFrame = viewModel::deleteFrame,
-                onDeleteAll = viewModel::deleteAll,
-                onCopyFrame = viewModel::copyFrame,
+                onAddFrame = {
+                    isFramePreviewVisible = false
+                    viewModel.addFrame()
+                },
+                onDeleteFrame = {
+                    isFramePreviewVisible = false
+                    viewModel.deleteFrame()
+                },
+                onDeleteAll = {
+                    isFramePreviewVisible = false
+                    viewModel.deleteAll()
+                },
+                onCopyFrame = {
+                    isFramePreviewVisible = false
+                    viewModel.copyFrame()
+                },
                 onShowFrames = {
                     isFramePreviewVisible = !isFramePreviewVisible
                     viewModel.updatePreviewCache()
                 },
-                onUndo = viewModel::undo,
-                onRedo = viewModel::redo,
-                onStart = viewModel::startAnimation,
-                onPause = viewModel::pauseAnimation
+                onUndo = {
+                    isFramePreviewVisible = false
+                    viewModel.undo()
+                },
+                onRedo = {
+                    isFramePreviewVisible = false
+                    viewModel.redo()
+                },
+                onStart = {
+                    isFramePreviewVisible = false
+                    viewModel.startAnimation()
+                },
+                onPause = {
+                    isFramePreviewVisible = false
+                    viewModel.pauseAnimation()
+                }
             )
 
             AdditionalBar(
@@ -147,10 +171,7 @@ fun MainScreen(
                     onItemDrawn = viewModel.onItemDrawn,
                     onToolChanged = viewModel.onToolChanged,
                     modifier = Modifier
-                        .padding(
-                            horizontal = 16.dp,
-                            vertical = 80.dp
-                        )
+                        .padding(16.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .border(
                             width = 1.dp,

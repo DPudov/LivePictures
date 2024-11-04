@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -11,7 +12,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
 import com.dpudov.domain.model.Circle
@@ -65,13 +66,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    private val app: Application,
     private val animationRepository: IAnimationRepository,
     private val frameRepository: IFrameRepository,
     private val gifRepository: IGifExportRepository,
     private val drawableItemRepository: IDrawableItemRepository,
     private val generateFramesUsecase: GenerateFramesUsecase
 //    private val instrumentRepository: IInstrumentRepository
-) : ViewModel() {
+) : AndroidViewModel(app) {
     //    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
 //        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow()
@@ -83,19 +85,34 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _framesCache: MutableStateFlow<List<Frame>> = MutableStateFlow(emptyList())
+    private val backgroundBitmap =
+        AppCompatResources.getDrawable(app.applicationContext, R.drawable.paper_texture)
+            ?.toBitmap(width = 1080, height = 1920)
+
+    //    @OptIn(ExperimentalCoroutinesApi::class)
     val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
+//        .flatMapLatest { frames ->
+//            val ids = frames.map(Frame::id)
+//            frameRepository.loadAnyByIds(ids)
+//        }
         .map { frameList ->
             frameList.map { frame ->
                 val items = drawableItemRepository.getItemsByFrameId(frame.id)
+                val result = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                val resultCanvas = Canvas(result)
+                if (backgroundBitmap != null) {
+                    resultCanvas.drawBitmap(backgroundBitmap, 0f, 0f, null)
+                }
                 val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
 
                 items.forEach {
                     canvas.drawItem(it)
                 }
+                resultCanvas.drawBitmap(bitmap, 0f, 0f, null)
                 FramePreviewData(
                     frame = frame,
-                    bitmap = bitmap
+                    bitmap = result
                 )
             }
         }
@@ -365,6 +382,20 @@ class MainViewModel @Inject constructor(
                     pageSize = PAGE_SIZE
                 )
                 _framesCache.update { loadedFrames }
+            } else {
+                val frame = currentFrame.value ?: return@launch
+                val frameId = frame.id
+                val prevFrames = frameRepository.loadPreviousFrames(
+                    animationId = currentAnimationId,
+                    firstFrameId = frameId,
+                    pageSize = PAGE_SIZE
+                )
+                val nextFrames = frameRepository.loadNextFrames(
+                    animationId = currentAnimationId,
+                    lastFrameId = frameId,
+                    pageSize = PAGE_SIZE
+                )
+                _framesCache.update { prevFrames + frame + nextFrames }
             }
         }
     }
@@ -572,9 +603,6 @@ class MainViewModel @Inject constructor(
                 if (!gifDir.exists()) gifDir.mkdirs()
                 val outputFile = File(gifDir, "output.gif")
                 withContext(Dispatchers.Default) {
-                    val backgroundBitmap =
-                        AppCompatResources.getDrawable(context, R.drawable.paper_texture)
-                            ?.toBitmap(width = 1080, height = 1920)
                     gifRepository.start(currentAnimation.fps, outputFile)
                     var lastFrameId: UUID? = null
                     do {

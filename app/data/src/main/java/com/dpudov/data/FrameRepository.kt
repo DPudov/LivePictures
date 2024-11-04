@@ -2,11 +2,15 @@ package com.dpudov.data
 
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.repository.IFrameRepository
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 class FrameRepository(
     private val localDaoService: IFrameDaoService
 ) : IFrameRepository {
+    override fun loadAnyByIds(ids: List<UUID>): Flow<List<Frame>> =
+        localDaoService.loadAnyByIds(ids)
+
     override suspend fun loadNextFrames(
         animationId: UUID,
         lastFrameId: UUID?,
