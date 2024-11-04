@@ -28,7 +28,7 @@ sealed class Instrument(val name: String) {
         )
 
         val draggableInstruments = setOf(
-            Pencil, Brush, Eraser
+            Brush, Eraser, Pencil
         )
     }
 }
