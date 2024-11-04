@@ -1,5 +1,6 @@
 package com.dpudov.livepictures.presentation.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.GenerationState
 import com.dpudov.livepictures.presentation.model.GifPreparationState
 import com.dpudov.livepictures.presentation.ui.controls.AdditionalBar
@@ -100,6 +102,11 @@ fun MainScreen(
                 },
                 onDeleteFrame = {
                     isFramePreviewVisible = false
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.hold_longer_to_delete_all_frames),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     viewModel.deleteFrame()
                 },
                 onDeleteAll = {

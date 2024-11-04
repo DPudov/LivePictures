@@ -34,4 +34,5 @@
     <string name="add_circle">Добавить круг</string>
     <string name="generate_n_frames">Генерация N кадров</string>
     <string name="generate">Сгенерировать</string>
+    <string name="hold_longer_to_delete_all_frames">Удерживайте, чтобы удалить все кадры</string>
 </resources>
