@@ -22,5 +22,13 @@ sealed class Instrument(val name: String) {
         const val BRUSH_NAME = "brush_instrument"
         const val ERASER_NAME = "eraser_instrument"
         const val FIGURE_INSTRUMENT = "figure_instrument"
+
+        val tappableInstruments = setOf(
+            Figure.Rectangle, Figure.Triangle, Figure.Circle
+        )
+
+        val draggableInstruments = setOf(
+            Pencil, Brush, Eraser
+        )
     }
 }

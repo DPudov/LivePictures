@@ -17,10 +17,16 @@ fun InstrumentEnum.toData(): Instrument = when (this) {
     InstrumentEnum.PENCIL -> Instrument.Pencil
     InstrumentEnum.BRUSH -> Instrument.Brush
     InstrumentEnum.ERASER -> Instrument.Eraser
+    InstrumentEnum.CIRCLE -> Instrument.Figure.Circle
+    InstrumentEnum.RECTANGLE -> Instrument.Figure.Rectangle
+    InstrumentEnum.TRIANGLE -> Instrument.Figure.Triangle
 }
 
 fun Instrument.toEnum(): InstrumentEnum = when (this) {
     Instrument.Brush -> InstrumentEnum.BRUSH
     Instrument.Eraser -> InstrumentEnum.ERASER
     Instrument.Pencil -> InstrumentEnum.PENCIL
+    Instrument.Figure.Circle -> InstrumentEnum.CIRCLE
+    Instrument.Figure.Rectangle -> InstrumentEnum.RECTANGLE
+    Instrument.Figure.Triangle -> InstrumentEnum.TRIANGLE
 }

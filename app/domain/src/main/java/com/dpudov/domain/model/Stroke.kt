@@ -5,7 +5,7 @@ import java.util.UUID
 data class Stroke(
     override val id: UUID,
 
-    val frameId: UUID,
+    override val frameId: UUID,
 
     override val color: Int,
 

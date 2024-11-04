@@ -1,11 +1,13 @@
 package com.dpudov.livepictures.di
 
 import com.dpudov.data.IAnimationDaoService
+import com.dpudov.data.ICircleDaoService
 import com.dpudov.data.IFrameDaoService
 import com.dpudov.data.IInstrumentDaoService
 import com.dpudov.data.IStrokeDaoService
 import com.dpudov.frames.datasource.local.database.AppDatabase
 import com.dpudov.frames.datasource.local.service.AnimationDaoService
+import com.dpudov.frames.datasource.local.service.CircleDaoService
 import com.dpudov.frames.datasource.local.service.FrameDaoService
 import com.dpudov.frames.datasource.local.service.InstrumentDaoService
 import com.dpudov.frames.datasource.local.service.StrokeDaoService
@@ -40,4 +42,9 @@ class ServiceModule {
         appDatabase: AppDatabase
     ): IInstrumentDaoService =
         InstrumentDaoService(appDatabase = appDatabase)
+
+    @Provides
+    fun provideCircleDaoService(
+        appDatabase: AppDatabase
+    ): ICircleDaoService = CircleDaoService(appDatabase = appDatabase)
 }

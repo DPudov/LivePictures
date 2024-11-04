@@ -6,6 +6,8 @@ import android.graphics.PorterDuffXfermode
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -37,7 +39,7 @@ import com.dpudov.domain.model.Point
 import com.dpudov.domain.model.Stroke
 import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
-import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
+import com.dpudov.livepictures.presentation.model.OnItemDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import java.util.UUID
 import android.graphics.Color as StandardColor
@@ -51,13 +53,13 @@ fun LiveCanvas(
     items: List<DrawableItem> = emptyList(),
     instrument: Instrument = Instrument.Pencil,
     animationState: AnimationState = AnimationState.Idle,
-    onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { },
+    onItemDrawn: OnItemDrawn = OnItemDrawn { },
     onToolChanged: OnToolChanged = OnToolChanged { },
     color: Int = StandardColor.WHITE,
     size: Float = 1f,
     modifier: Modifier = Modifier
 ) {
-    var currentStroke by remember { mutableStateOf<Stroke?>(null) }
+    var currentItem by remember { mutableStateOf<DrawableItem?>(null) }
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     val transparentBitmap = remember(canvasSize) {
@@ -84,48 +86,88 @@ fun LiveCanvas(
                 .onSizeChanged { size ->
                     canvasSize = size
                 }
-                .pointerInput(items, frame, instrument, color) {
+                .pointerInput(items, frame, instrument, color, size) {
                     if (animationState == AnimationState.Idle) {
-                        detectDragGestures(
-                            onDragStart = { offset: Offset ->
-                                val id = UUID.randomUUID()
-                                currentStroke = Stroke(
-                                    id = id,
-                                    frameId = frame.id,
-                                    points = listOf(
-                                        Point(
-                                            id = 0L,
-                                            strokeId = id,
-                                            x = offset.x,
-                                            y = offset.y
+                        detectTransformGestures { centroid, pan, zoom, rotation ->
+                            if (instrument in Instrument.tappableInstruments && currentItem != null) {
+                                currentItem = currentItem?.let {
+                                    when (it) {
+                                        is Circle -> it.copy(
+                                            radius = it.radius * zoom,
+                                            centerX = it.centerX + pan.x,
+                                            centerY = it.centerY + pan.y
                                         )
-                                    ),
-                                    color = if (instrument == Instrument.Eraser) Color.Transparent.toArgb() else color,
-                                    thickness = if (instrument == Instrument.Pencil) Instrument.PENCIL_SIZE else size,
-                                    instrument = instrument,
-                                    finishTimestamp = System.currentTimeMillis()
-                                )
-                            },
-                            onDrag = { change: PointerInputChange, _ ->
-                                currentStroke = currentStroke?.let {
-                                    it.copy(
-                                        points = it.points +
-                                                Point(
-                                                    id = 0L,
-                                                    strokeId = it.id,
-                                                    x = change.position.x,
-                                                    y = change.position.y
-                                                )
-                                    )
+
+                                        is Stroke -> null // do nothing
+                                    }
                                 }
-                            },
-                            onDragEnd = {
-                                currentStroke?.let {
-                                    onStrokeDrawn.onStrokeDrawn(it)
-                                }
-                                currentStroke = null
                             }
-                        )
+                        }
+                        if (instrument in Instrument.tappableInstruments) {
+                            detectTapGestures(
+                                onPress = { offset: Offset ->
+                                    currentItem = when (instrument) {
+                                        Instrument.Figure.Circle -> Circle(
+                                            id = UUID.randomUUID(),
+                                            frameId = frame.id,
+                                            finishTimestamp = System.currentTimeMillis(),
+                                            color = color,
+                                            thickness = size,
+                                            radius = Circle.DEFAULT_RADIUS,
+                                            centerX = offset.x,
+                                            centerY = offset.y
+                                        )
+
+                                        Instrument.Figure.Rectangle -> TODO()
+                                        Instrument.Figure.Triangle -> TODO()
+                                        else -> null
+                                    }
+                                }
+                            )
+                        }
+
+                        if (instrument in Instrument.draggableInstruments) {
+                            detectDragGestures(
+                                onDragStart = { offset: Offset ->
+                                    val id = UUID.randomUUID()
+                                    currentItem = Stroke(
+                                        id = id,
+                                        frameId = frame.id,
+                                        points = listOf(
+                                            Point(
+                                                id = 0L,
+                                                strokeId = id,
+                                                x = offset.x,
+                                                y = offset.y
+                                            )
+                                        ),
+                                        color = if (instrument == Instrument.Eraser) Color.Transparent.toArgb() else color,
+                                        thickness = if (instrument == Instrument.Pencil) Instrument.PENCIL_SIZE else size,
+                                        instrument = instrument,
+                                        finishTimestamp = System.currentTimeMillis()
+                                    )
+                                },
+                                onDrag = { change: PointerInputChange, _ ->
+                                    currentItem = (currentItem as? Stroke)?.let {
+                                        it.copy(
+                                            points = it.points +
+                                                    Point(
+                                                        id = 0L,
+                                                        strokeId = it.id,
+                                                        x = change.position.x,
+                                                        y = change.position.y
+                                                    )
+                                        )
+                                    }
+                                },
+                                onDragEnd = {
+                                    currentItem?.let {
+                                        onItemDrawn.onItemDrawn(it)
+                                    }
+                                    currentItem = null
+                                }
+                            )
+                        }
                     }
                 }
             ) {
@@ -140,8 +182,8 @@ fun LiveCanvas(
                     items.forEach {
                         canvas.drawItem(it)
                     }
-                    currentStroke?.let {
-                        canvas.drawStroke(it)
+                    currentItem?.let {
+                        canvas.drawItem(it)
                     }
                     drawIntoCanvas {
                         it.nativeCanvas.drawBitmap(bitmap, 0f, 0f, null)

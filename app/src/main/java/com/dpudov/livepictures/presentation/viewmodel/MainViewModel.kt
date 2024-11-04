@@ -14,22 +14,24 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dpudov.domain.model.Animation
+import com.dpudov.domain.model.Circle
 import com.dpudov.domain.model.DrawableItem
 import com.dpudov.domain.model.Frame
 import com.dpudov.domain.model.Instrument
 import com.dpudov.domain.model.Stroke
 import com.dpudov.domain.repository.IAnimationRepository
+import com.dpudov.domain.repository.IDrawableItemRepository
 import com.dpudov.domain.repository.IFrameRepository
-import com.dpudov.domain.repository.IStrokeRepository
 import com.dpudov.exporter.repository.IGifExportRepository
 import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.ButtonState
 import com.dpudov.livepictures.presentation.model.FramePreviewData
 import com.dpudov.livepictures.presentation.model.GifPreparationState
-import com.dpudov.livepictures.presentation.model.OnStrokeDrawn
+import com.dpudov.livepictures.presentation.model.OnItemDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
 import com.dpudov.livepictures.presentation.model.ToolForStylus
+import com.dpudov.livepictures.presentation.ui.controls.drawItem
 import com.dpudov.livepictures.util.ColorUtil.makeSemiTransparentColor
 import com.dpudov.livepictures.util.combineAny
 import com.dpudov.livepictures.util.tickerFlow
@@ -61,8 +63,8 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val animationRepository: IAnimationRepository,
     private val frameRepository: IFrameRepository,
-    private val strokeRepository: IStrokeRepository,
-    private val gifRepository: IGifExportRepository
+    private val gifRepository: IGifExportRepository,
+    private val drawableItemRepository: IDrawableItemRepository
 //    private val instrumentRepository: IInstrumentRepository
 ) : ViewModel() {
     //    val instruments: StateFlow<List<Instrument>> = instrumentRepository.getAvailableInstruments()
@@ -79,12 +81,12 @@ class MainViewModel @Inject constructor(
     val framePreviews: StateFlow<List<FramePreviewData>> = _framesCache
         .map { frameList ->
             frameList.map { frame ->
-                val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                val items = drawableItemRepository.getItemsByFrameId(frame.id)
                 val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
 
-                strokes.forEach {
-                    canvas.drawStroke(it)
+                items.forEach {
+                    canvas.drawItem(it)
                 }
                 FramePreviewData(
                     frame = frame,
@@ -116,7 +118,7 @@ class MainViewModel @Inject constructor(
         .combineAny(refreshTrigger) { frame, _ -> frame }
         .mapLatest { frame ->
             frame ?: return@mapLatest emptyList()
-            val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+            val strokes = drawableItemRepository.getItemsByFrameId(frame.id)
             strokes
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -126,10 +128,24 @@ class MainViewModel @Inject constructor(
         .combineAny(refreshTrigger) { frame, _ -> frame }
         .mapLatest { frame ->
             frame ?: return@mapLatest emptyList()
-            val strokes = strokeRepository.getStrokesByFrameId(frame.id).map {
-                it.copy(color = makeSemiTransparentColor(argb = it.color, alphaFactor = 0.5f))
+            val items = drawableItemRepository.getItemsByFrameId(frame.id).map {
+                when (it) {
+                    is Circle -> it.copy(
+                        color = makeSemiTransparentColor(
+                            argb = it.color,
+                            alphaFactor = 0.5f
+                        )
+                    )
+
+                    is Stroke -> it.copy(
+                        color = makeSemiTransparentColor(
+                            argb = it.color,
+                            alphaFactor = 0.5f
+                        )
+                    )
+                }
             }
-            strokes
+            items
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -238,8 +254,8 @@ class MainViewModel @Inject constructor(
         setupAnimation()
     }
 
-    val onStrokeDrawn: OnStrokeDrawn = OnStrokeDrawn { stroke ->
-        addStroke(stroke)
+    val onItemDrawn: OnItemDrawn = OnItemDrawn { item ->
+        addDrawableItem(item)
     }
 
     val onToolChanged: OnToolChanged = OnToolChanged { newTool ->
@@ -317,9 +333,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun addStroke(stroke: Stroke) {
+    private fun addDrawableItem(item: DrawableItem) {
         viewModelScope.launch {
-            strokeRepository.addStroke(stroke)
+            drawableItemRepository.addItem(item)
             refreshTrigger.emit(Unit)
         }
     }
@@ -462,8 +478,7 @@ class MainViewModel @Inject constructor(
             redoStack.update {
                 it + lastItem
             }
-            // TODO: select item
-            strokeRepository.removeStroke(lastItem.id)
+            drawableItemRepository.remove(lastItem)
             refreshTrigger.emit(Unit)
         }
     }
@@ -472,10 +487,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val currentStack = redoStack.value
             if (currentStack.isNotEmpty()) {
-                val redoStroke = currentStack.last()
+                val redoItem = currentStack.last()
                 redoStack.update { it.dropLast(1) }
-                // TODO: Drawable item
-//                strokeRepository.addStroke(redoStroke)
+                // TODO: Если добавился новый элемент сбросить стек redo
+                drawableItemRepository.addItem(redoItem)
                 refreshTrigger.emit(Unit)
             }
         }
@@ -520,9 +535,18 @@ class MainViewModel @Inject constructor(
                         }
                     )
                 }
+            val copyCircles = drawableItems
+                .filterIsInstance<Circle>()
+                .map { circle ->
+                    val id = UUID.randomUUID()
+                    circle.copy(
+                        id = id,
+                        frameId = copyFrameId
+                    )
+                }
             frameRepository.addFrame(copyFrame)
-            strokeRepository.addAll(copyStrokes)
-            // TODO: figures
+            drawableItemRepository.addAll(copyStrokes)
+            drawableItemRepository.addAll(copyCircles)
             updateCurrentFrame(copyFrame)
         }
     }
@@ -530,7 +554,6 @@ class MainViewModel @Inject constructor(
     fun shareAnimation(context: Context) {
         viewModelScope.launch {
             runCatching {
-                // TODO: figures
                 _gifPreparationState.value = GifPreparationState.Loading
                 val currentAnimation = currentAnimation.value ?: return@launch
                 val gifDir = File(context.cacheDir, "shared_gifs")
@@ -548,7 +571,7 @@ class MainViewModel @Inject constructor(
                         Log.d(javaClass.simpleName, "Processing frames: $frames")
                         lastFrameId = frames.lastOrNull()?.id
                         val bitmaps = frames.map { frame ->
-                            val strokes = strokeRepository.getStrokesByFrameId(frame.id)
+                            val items = drawableItemRepository.getItemsByFrameId(frame.id)
                             val result = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
                             val resultCanvas = Canvas(result)
                             if (backgroundBitmap != null) {
@@ -557,8 +580,8 @@ class MainViewModel @Inject constructor(
                             val bitmap = Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
                             val canvas = Canvas(bitmap)
 
-                            strokes.forEach {
-                                canvas.drawStroke(it)
+                            items.forEach {
+                                canvas.drawItem(it)
                             }
                             resultCanvas.drawBitmap(bitmap, 0f, 0f, null)
                             Bitmap.createScaledBitmap(result, 240, 426, true)
