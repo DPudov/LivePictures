@@ -2,7 +2,6 @@ package com.dpudov.livepictures.presentation.ui.controls
 
 import android.graphics.Bitmap
 import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +44,7 @@ import com.dpudov.livepictures.R
 import com.dpudov.livepictures.presentation.model.AnimationState
 import com.dpudov.livepictures.presentation.model.OnItemDrawn
 import com.dpudov.livepictures.presentation.model.OnToolChanged
+import com.dpudov.livepictures.util.CanvasUtil.drawItem
 import java.util.UUID
 import android.graphics.Color as StandardColor
 
@@ -64,9 +65,9 @@ fun LiveCanvas(
 ) {
     var currentItem by remember { mutableStateOf<DrawableItem?>(null) }
 
-    var scale by remember { mutableStateOf(1f) }
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     val transparentBitmap = remember(canvasSize) {
@@ -234,103 +235,4 @@ fun LiveCanvas(
             )
         }
     }
-}
-
-fun android.graphics.Canvas.drawItem(item: DrawableItem) {
-    when (item) {
-        is Circle -> drawCircle(item)
-        is Stroke -> drawStroke(item)
-        is Rect -> drawRectangle(item)
-        is Triangle -> drawTriangle(item)
-    }
-}
-
-fun android.graphics.Canvas.drawStroke(stroke: Stroke) {
-    if (stroke.points.isEmpty()) return
-    val initialPoint = stroke.points.first()
-    val path = android.graphics.Path().apply {
-        moveTo(initialPoint.x, initialPoint.y)
-        for (point in stroke.points.drop(1)) {
-            lineTo(point.x, point.y)
-        }
-    }
-    val paint = android.graphics.Paint().apply {
-        isAntiAlias = true
-        this.color =
-            if (stroke.instrument == Instrument.Eraser) android.graphics.Color.TRANSPARENT
-            else stroke.color
-        xfermode =
-            if (stroke.instrument == Instrument.Eraser) PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-            else null
-        strokeWidth = stroke.thickness
-        style = android.graphics.Paint.Style.STROKE
-        strokeCap = android.graphics.Paint.Cap.ROUND
-        clearShadowLayer()
-    }
-
-    drawPath(
-        /* path = */ path,
-        /* paint = */ paint
-    )
-}
-
-fun android.graphics.Canvas.drawCircle(circle: Circle) {
-    val paint = android.graphics.Paint().apply {
-        isAntiAlias = true
-        this.color = circle.color
-        xfermode = null
-        strokeWidth = circle.thickness
-        style = android.graphics.Paint.Style.STROKE
-        strokeCap = android.graphics.Paint.Cap.ROUND
-        clearShadowLayer()
-    }
-
-    drawCircle(
-        /* cx = */ circle.centerX,
-        /* cy = */ circle.centerY,
-        /* radius = */ circle.radius,
-        /* paint = */ paint
-    )
-}
-
-fun android.graphics.Canvas.drawRectangle(rect: Rect) {
-    val paint = android.graphics.Paint().apply {
-        isAntiAlias = true
-        this.color = rect.color
-        xfermode = null
-        strokeWidth = rect.thickness
-        style = android.graphics.Paint.Style.STROKE
-        strokeCap = android.graphics.Paint.Cap.ROUND
-        clearShadowLayer()
-    }
-
-    drawRect(
-        /* left = */ rect.topLeftX,
-        /* top = */ rect.topLeftY,
-        /* right = */ rect.topLeftX + rect.width,
-        /* bottom = */ rect.topLeftY + rect.height,
-        /* paint = */ paint
-    )
-}
-
-fun android.graphics.Canvas.drawTriangle(triangle: Triangle) {
-    val paint = android.graphics.Paint().apply {
-        isAntiAlias = true
-        this.color = triangle.color
-        xfermode = null
-        strokeWidth = triangle.thickness
-        style = android.graphics.Paint.Style.STROKE
-        strokeCap = android.graphics.Paint.Cap.ROUND
-        clearShadowLayer()
-    }
-    val path = android.graphics.Path().apply {
-        moveTo(triangle.x1, triangle.y1)
-        lineTo(triangle.x2, triangle.y2)
-        lineTo(triangle.x3, triangle.y3)
-        lineTo(triangle.x1, triangle.y1)
-    }
-    drawPath(
-        /* path = */ path,
-        /* paint = */ paint
-    )
 }
